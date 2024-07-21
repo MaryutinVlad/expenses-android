@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import ContentView from '@/components/ContentView';
+import { group } from 'console';
 
 export type Group = {
   createdOn: string,
@@ -66,6 +67,20 @@ export default function HomeScreen() {
     }
   }
 
+  const changeName = async (nameInput: string) => {
+
+    const updatedUser: User = {
+      profile: {
+        ...user.profile,
+        name: nameInput,
+      },
+      expenses: user.expenses,
+    };
+
+    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  }
+
   const addGroup = async (groupName: string, pickedColor: string) => {
 
     const groupValues = {
@@ -83,6 +98,47 @@ export default function HomeScreen() {
         ]
       },
       expenses: user.expenses,
+    };
+
+    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
+  const removeGroup = async (groupTargeted: string) => {
+
+    const updatedGroups = user.profile.groups.filter(group => groupTargeted !== group.groupName);
+    const updatedExpenses: ExpensesEntry[] = []
+    user.expenses.forEach(month => {
+      updatedExpenses.push({
+        date: month.date,
+        entries: month.entries.filter(entry => entry.expenseGroup !== groupTargeted)
+      })
+    });
+
+    const updatedUser: User = {
+      profile: {
+        ...user.profile,
+        groups: updatedGroups,
+      },
+      expenses: updatedExpenses,
+    };
+
+    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
+  const removeGroups = async () => {
+    const updatedUser: User = {
+      profile: {
+        ...user.profile,
+        groups: [],
+      },
+      expenses: [
+        {
+          date: dateKey,
+          entries: [],
+        }
+      ],
     };
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
@@ -132,6 +188,9 @@ export default function HomeScreen() {
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#FFFFFF', dark: '#FFFFFF' }}
       user={user.profile}
+      onChangeName={changeName}
+      onRemoveGroup={removeGroup}
+      onRemoveGroups={removeGroups}
       headerImage={
         <Image
           source={require('@/assets/images/logo.jpg')}

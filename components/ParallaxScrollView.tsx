@@ -1,4 +1,5 @@
 import type { PropsWithChildren, ReactElement } from 'react';
+import type { Group } from '@/app/(tabs)';
 import { StyleSheet, useColorScheme, View, Image } from 'react-native';
 import Animated, {
   interpolate,
@@ -16,15 +17,22 @@ type Props = PropsWithChildren<{
   headerBackgroundColor: { dark: string; light: string };
   user: {
     name: string,
-    avatar: string
-  }
+    avatar: string,
+    groups: Group[],
+  },
+  onChangeName(nameInput: string): void,
+  onRemoveGroup(groupTargeted: string): void,
+  onRemoveGroups(): void,
 }>;
 
 export default function ParallaxScrollView({
   children,
   headerImage,
   headerBackgroundColor,
-  user
+  user,
+  onChangeName,
+  onRemoveGroup,
+  onRemoveGroups,
 }: Props) {
   const colorScheme = useColorScheme() ?? 'light';
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -59,6 +67,10 @@ export default function ParallaxScrollView({
           {headerImage}
           <UserView
             name={user.name}
+            groups={user.groups}
+            onChangeName={onChangeName}
+            onRemoveGroup={onRemoveGroup}
+            onRemoveGroups={onRemoveGroups}
             avatar={
               <Image
                 source={require('@/assets/images/defaultAvatar.png')}
