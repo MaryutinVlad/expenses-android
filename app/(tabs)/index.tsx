@@ -1,51 +1,150 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useState } from 'react';
 
-import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import ContentView from '@/components/ContentView';
+
+export type Group = {
+  createdOn: string,
+  groupName: string,
+  groupColor: string,
+};
+
+export type Expense = {
+  createdOn: string,
+  expenseGroup: string,
+  expenseValue: number,
+};
+
+export type ExpensesEntry = {
+  date: string,
+  entries: Expense[],
+};
+
+type User = {
+  profile: {
+    name: string,
+    createdOn: string,
+    avatar: string,
+    groups: Group[],
+  },
+  expenses: ExpensesEntry[],
+};
 
 export default function HomeScreen() {
+  
+  const date = new Date();
+  const dateKey = String(date.getMonth() + 1) + "/" + String(date.getFullYear())
+  const newProfile: User = {
+    profile: {
+      name: "New User",
+      createdOn: date.toLocaleDateString(),
+      avatar: '',
+      groups: [],
+    },
+    expenses: [
+      {
+        date: dateKey,
+        entries: [],
+      }
+    ]
+  }
+
+  const [ user, setUser ] = useState(newProfile)
+
+  const findProfile = async () => {
+    try {
+      const profile = await AsyncStorage.getItem('expenses-app');
+      if (profile !== null) {
+        setUser(JSON.parse(profile))
+      } else {
+        await AsyncStorage.setItem('expenses-app', JSON.stringify(newProfile))
+      }
+    } catch(error) {
+      console.log(error)
+    }
+  }
+
+  const addGroup = async (groupName: string, pickedColor: string) => {
+
+    const groupValues = {
+      groupName,
+      groupColor: pickedColor,
+      createdOn: date.toLocaleDateString(),
+    };
+
+    const updatedUser: User = {
+      profile: {
+        ...user.profile,
+        groups: [
+          ...user.profile.groups,
+          groupValues
+        ]
+      },
+      expenses: user.expenses,
+    };
+
+    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  }
+
+  const addExpense = async (groupName: string, groupValue: number) => {
+
+    const updatedUser: User = {
+      profile: user.profile,
+      expenses: [],
+    }
+    
+    const expenseValues = {
+      expenseGroup: groupName,
+      expenseValue: groupValue,
+      createdOn: date.toLocaleDateString(),
+    };
+
+    if (user.expenses[user.expenses.length - 1].date === dateKey) {
+
+      const updatedExpenses = user.expenses
+
+      updatedExpenses[updatedExpenses.length - 1].entries.push(expenseValues)
+
+      updatedUser.expenses = updatedExpenses
+
+    } else {
+      updatedUser.expenses = [
+        ...user.expenses,
+        {
+          date: dateKey,
+          entries: [
+            expenseValues
+          ]
+        }
+      ]
+    }
+
+    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  }
+
+  findProfile();
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerBackgroundColor={{ light: '#FFFFFF', dark: '#FFFFFF' }}
+      user={user.profile}
       headerImage={
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          source={require('@/assets/images/logo.jpg')}
+          style={styles.logo}
         />
       }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
+      <ContentView
+        onAddGroup={addGroup}
+        onAddExpense={addExpense}
+        groups={user.profile.groups}
+        expenses={user.expenses}
+        dateKey={dateKey}
+      />
     </ParallaxScrollView>
   );
 }
@@ -60,11 +159,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  logo: {
+    margin: 'auto',
   },
 });
