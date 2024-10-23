@@ -2,7 +2,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Button } fr
 import { useState } from "react";
 
 import type { ReactElement } from "react";
-import type { Group } from "@/app/(tabs)";
+import type { Group } from "@/app";
 
 export type UserProps = {
   name: string,

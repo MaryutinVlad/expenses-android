@@ -2,9 +2,8 @@ import { Image, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import ParallaxScrollView from '@/components/Overlay';
 import ContentView from '@/components/ContentView';
-import { group } from 'console';
 
 export type Group = {
   createdOn: string,

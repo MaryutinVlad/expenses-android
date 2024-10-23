@@ -4,7 +4,7 @@ import Slider from "@react-native-community/slider";
 
 import GroupsView from "@/components/GroupsView";
 
-import { Group, ExpensesEntry } from "@/app/(tabs)";
+import { Group, ExpensesEntry } from "@/app";
 
 type Tints = {
   r: string,

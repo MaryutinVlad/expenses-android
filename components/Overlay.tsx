@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactElement } from 'react';
-import type { Group } from '@/app/(tabs)';
+import type { Group } from '@/app';
 import { StyleSheet, useColorScheme, View, Image } from 'react-native';
 import Animated, {
   interpolate,

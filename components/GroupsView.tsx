@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from "react-native"
 
 import GroupView from "./GroupView";
-import { Group, ExpensesEntry } from "@/app/(tabs)";
+import { Group, ExpensesEntry } from "@/app";
 import showExpenses from "../helpers/showExpenses";
 
 type Props = {
