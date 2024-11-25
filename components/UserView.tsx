@@ -102,8 +102,10 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
               <Text style={styles.settingsItemTitle}>Delete group:</Text>
               <View style={{
                 flexDirection: "row",
+                justifyContent: "space-between",
+                width: "50%",
                 flexWrap: "wrap",
-                gap: 7
+                gap: 5
               }}>{
                 groupTargeted ? (
                   <View style={{
@@ -188,17 +190,18 @@ const styles = StyleSheet.create({
     height: 35,
   },
   settingsContainer: {
+    gap: 14,
     marginTop: 10,
     borderWidth: .5,
     borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 9,
   },
   settingsItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
   },
   settingsItemTitle: {
     fontSize: 17,

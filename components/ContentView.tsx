@@ -38,12 +38,15 @@ export default function ContentView({
 
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
   const [ pickedColor, setPickedColor ] = useState("#000000");
-  const [ groupName, setGroupName ] = useState("");
+  const [ groupName, onChangeGroupName ] = useState("");
   const [ filter, setFilter ] = useState(2);
 
   const toggleGroupPopup = () => {
-    setIsAddingGroup(!isAddingGroup)
+    setIsAddingGroup(!isAddingGroup);
+    onChangeGroupName("");
   }
+
+  //doesn't work anymore in dev mode
 
   const changeColor = (value:number, tint: string) => {
 
@@ -55,13 +58,13 @@ export default function ContentView({
 
     colorPalette[tint as keyof Tints] = hexTint;
 
-    setPickedColor("#" + colorPalette.r + colorPalette.g + colorPalette.b);
+    setPickedColor(() => "#" + colorPalette.r + colorPalette.g + colorPalette.b);
   }
 
   const addGroup = () => {
     onAddGroup(groupName, pickedColor);
     setIsAddingGroup(false);
-    setGroupName("");
+    onChangeGroupName("");
     hexTint = "0";
     colorPalette.r = "00";
     colorPalette.g = "00";
@@ -85,8 +88,9 @@ export default function ContentView({
                   Group name:
                 </Text>
                 <TextInput
-                  onChangeText={setGroupName}
-                  value={groupName}
+                  onChangeText={onChangeGroupName}
+                  defaultValue={groupName}
+                  maxLength={15}
                   placeholder="type in group name"
                   style={{fontSize: 20, textDecorationLine: "underline", color: pickedColor}}
                 />
@@ -170,14 +174,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   addGroupContainer: {
-    marginTop: 20,
+    marginTop: 10,
   },
   addGroupInput: {
     flexDirection: 'row',
-    gap: 10,
-  },
-  addGroupSliders: {
-
+    alignItems: "center",
+    gap: 0,
   },
   filter: {
     flexDirection: 'row',

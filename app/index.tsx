@@ -1,6 +1,7 @@
 import { Image, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
+import 'react-native-get-random-values'
 
 import ParallaxScrollView from '@/components/Overlay';
 import ContentView from '@/components/ContentView';
