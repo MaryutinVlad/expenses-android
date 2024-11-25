@@ -46,6 +46,8 @@ export default function ContentView({
     onChangeGroupName("");
   }
 
+  //doesn't work anymore in dev mode
+
   const changeColor = (value:number, tint: string) => {
 
     hexTint = Math.round(value).toString(16);
