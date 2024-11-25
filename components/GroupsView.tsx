@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet } from "react-native"
+import { View, Text, StyleSheet } from "react-native";
+import { nanoid } from "nanoid";
 
 import GroupView from "./GroupView";
 import { Group, ExpensesEntry } from "@/app";
@@ -36,7 +37,7 @@ export default function GroupsView({
       {
         expensesSummary.map(({ groupName, groupValue }) => (
           <GroupView
-            key={groupName + '-expenses'}
+            key={groupName + '-summary'}
             groupName={groupName}
             groupValue={groupValue}
             groupColor={groupColors[groupName]}
@@ -52,7 +53,7 @@ export default function GroupsView({
         {
           expensesHistory.map(({ expenseGroup, expenseValue, createdOn }) => (
             <View
-              key={expenseGroup + '-history'}
+              key={nanoid(10)}
               style={styles.historyUnit}
             >
               <Text style={styles.historyText}>
