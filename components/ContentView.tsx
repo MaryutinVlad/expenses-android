@@ -1,16 +1,11 @@
 import { View, Text, Button, StyleSheet, TextInput } from "react-native";
 import { useState } from "react";
-import Slider from "@react-native-community/slider";
+import colors from "../helpers/colors.json";
 
 import GroupsView from "@/components/GroupsView";
 
 import { Group, ExpensesEntry } from "@/app";
-
-type Tints = {
-  r: string,
-  g: string,
-  b: string,
-}
+import { Pressable } from "react-native-gesture-handler";
 
 type Props = {
   onAddGroup(groupName: string, groupColor: string): void,
@@ -18,14 +13,6 @@ type Props = {
   groups: Group[],
   expenses: ExpensesEntry[],
   dateKey: string,
-};
-
-let hexTint = "00";
-
-const colorPalette = {
-  r: "00",
-  g: "00",
-  b: "00",
 };
 
 export default function ContentView({
@@ -37,38 +24,22 @@ export default function ContentView({
 }: Props) {
 
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
-  const [ pickedColor, setPickedColor ] = useState("#000000");
+  const [ pickedColor, setPickedColor ] = useState("#007AFF");
   const [ groupName, onChangeGroupName ] = useState("");
   const [ filter, setFilter ] = useState(2);
 
   const toggleGroupPopup = () => {
     setIsAddingGroup(!isAddingGroup);
     onChangeGroupName("");
+    setPickedColor("#007AFF");
   }
 
-  //doesn't work anymore in dev mode
-
-  const changeColor = (value:number, tint: string) => {
-
-    hexTint = Math.round(value).toString(16);
-
-    if (hexTint.length === 1) {
-      hexTint = '0' + hexTint;
-    }
-
-    colorPalette[tint as keyof Tints] = hexTint;
-
-    setPickedColor(() => "#" + colorPalette.r + colorPalette.g + colorPalette.b);
-  }
 
   const addGroup = () => {
     onAddGroup(groupName, pickedColor);
     setIsAddingGroup(false);
     onChangeGroupName("");
-    hexTint = "0";
-    colorPalette.r = "00";
-    colorPalette.g = "00";
-    colorPalette.b = "00";
+    setPickedColor("#007AFF")
   }
 
   return (
@@ -92,39 +63,39 @@ export default function ContentView({
                   defaultValue={groupName}
                   maxLength={15}
                   placeholder="type in group name"
-                  style={{fontSize: 20, textDecorationLine: "underline", color: pickedColor}}
+                  style={{fontSize: 20, textDecorationLine: "underline", color: pickedColor, width: "60%" }}
                 />
               </View>
               <View>
                 <Text style={{fontSize: 20}}>
                   Pick group color: &#x2193;
                 </Text>
-                <Slider
-                  style={{width: '100%', height: 50}}
-                  onValueChange={(value) => changeColor(value, "r")}
-                  minimumValue={0}
-                  maximumValue={255}
-                  minimumTrackTintColor={pickedColor}
-                  maximumTrackTintColor={pickedColor}
-                />
-                <Slider
-                  style={{width: '100%', height: 50}}
-                  onValueChange={(value) => changeColor(value, "g")}
-                  minimumValue={0}
-                  maximumValue={255}
-                  minimumTrackTintColor={pickedColor}
-                  maximumTrackTintColor={pickedColor}
-                />
-                <Slider
-                  style={{width: '100%', height: 50}}
-                  onValueChange={(value) => changeColor(value, "b")}
-                  minimumValue={0}
-                  maximumValue={255}
-                  minimumTrackTintColor={pickedColor}
-                  maximumTrackTintColor={pickedColor}
-                />
+                <View style={{
+                  width: 328,
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  marginHorizontal: "auto",
+                  marginVertical: 10,
+                }}>
+                  {
+                    colors.map(color => (
+                      <Pressable
+                        key={color}
+                        onPress={() => setPickedColor(color)}
+                        style={{ width: 40, height: 40, borderWidth: .5, borderRadius: 3 }}
+                      >
+                        <View
+                          style={{backgroundColor: color, width: 35, height: 35, margin: "auto", borderRadius: 3}}
+
+                        />
+                      </Pressable>
+                    ))
+                  }
+                </View>
                 <Button
                   title="save"
+                  color={pickedColor}
                   onPress={addGroup}
                 />
               </View>
@@ -179,7 +150,7 @@ const styles = StyleSheet.create({
   addGroupInput: {
     flexDirection: 'row',
     alignItems: "center",
-    gap: 0,
+    gap: 10,
   },
   filter: {
     flexDirection: 'row',

@@ -102,7 +102,7 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
               <Text style={styles.settingsItemTitle}>Delete group:</Text>
               <View style={{
                 flexDirection: "row",
-                justifyContent: "space-between",
+                justifyContent: "flex-end",
                 width: "50%",
                 flexWrap: "wrap",
                 gap: 5
