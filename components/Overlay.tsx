@@ -1,5 +1,6 @@
 import type { PropsWithChildren, ReactElement } from 'react';
 import type { Group } from '@/app';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, useColorScheme, View, Image } from 'react-native';
 import Animated, {
   useAnimatedRef,
@@ -34,31 +35,33 @@ export default function ParallaxScrollView({
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
 
   return (
-    <View style={styles.container}>
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} showsVerticalScrollIndicator={false}>
-        <Animated.View
-          style={[
-            styles.header,
-            { backgroundColor: headerBackgroundColor[colorScheme] }
-          ]}>
-          {headerImage}
-          <UserView
-            name={user.name}
-            groups={user.groups}
-            onChangeName={onChangeName}
-            onRemoveGroup={onRemoveGroup}
-            onRemoveGroups={onRemoveGroups}
-            avatar={
-              <Image
-                source={require('@/assets/images/defaultAvatar.png')}
-                style={styles.avatar}
-              />
-            }
-          />
-        </Animated.View>
-        <View style={styles.content}>{children}</View>
-      </Animated.ScrollView>
-    </View>
+    <GestureHandlerRootView>
+      <View style={styles.container}>
+        <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} showsVerticalScrollIndicator={false}>
+          <Animated.View
+            style={[
+              styles.header,
+              { backgroundColor: headerBackgroundColor[colorScheme] }
+            ]}>
+            {headerImage}
+            <UserView
+              name={user.name}
+              groups={user.groups}
+              onChangeName={onChangeName}
+              onRemoveGroup={onRemoveGroup}
+              onRemoveGroups={onRemoveGroups}
+              avatar={
+                <Image
+                  source={require('@/assets/images/defaultAvatar.png')}
+                  style={styles.avatar}
+                />
+              }
+            />
+          </Animated.View>
+          <View style={styles.content}>{children}</View>
+        </Animated.ScrollView>
+      </View>
+    </GestureHandlerRootView>
   );
 }
 
