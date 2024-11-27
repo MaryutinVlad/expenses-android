@@ -21,6 +21,7 @@ export default function GroupView({
   const [ inputValue, setInputValue ] = useState("");
 
   const toggleAddExpense = () => {
+    console.log('!!!!!!!!!!!!!!!!')
     setIsAddingExpense(!isAddingExpense);
     setInputValue("");
   }
@@ -41,6 +42,7 @@ export default function GroupView({
         <Button
           title="+"
           onPress={toggleAddExpense}
+          color={isAddingExpense ? "#ff0800" : "#2196F3"}
         />
         <Text style={{ color: `${groupColor}`, ...styles.text}}>{groupName} </Text>
       </View>
@@ -55,6 +57,7 @@ export default function GroupView({
             />
             <Button
               title="save"
+              
               onPress={addExpense}
               disabled={!inputValue}
             />
@@ -70,12 +73,13 @@ export default function GroupView({
   )
 }
 
-
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    height: 30
   },
   subcontainer: {
     flexDirection: "row",
@@ -83,15 +87,20 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 20,
+    verticalAlign: "middle"
   },
   add: {
     flexDirection: "row",
     justifyContent: "space-around",
     backgroundColor: "#e5eaf3",
     borderRadius: 10,
+    alignItems: "center",
   },
   textInput: {
     textDecorationLine: "underline",
+    height: 30,
+    padding: 0,
+    margin: 0,
     textAlign: "center",
     minWidth: "40%",
     fontSize: 16,

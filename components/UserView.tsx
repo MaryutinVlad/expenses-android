@@ -124,10 +124,10 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
                 ) :
                   groups.map(group => (
                     <Button
-                      key={group.groupName + "-delete"}
+                      key={group.groupName + group.groupColor}
                       title={group.groupName}
                       color={group.groupColor}
-                      onPress={() => setGroupTargeted(group.groupName)}
+                      onPress={() => setGroupTargeted(group.id)}
                     />
                   ))
                 }

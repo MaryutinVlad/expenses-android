@@ -24,6 +24,7 @@ export default function ContentView({
 }: Props) {
 
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
+  const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
   const [ pickedColor, setPickedColor ] = useState("#007AFF");
   const [ groupName, onChangeGroupName ] = useState("");
   const [ filter, setFilter ] = useState(2);
@@ -34,6 +35,9 @@ export default function ContentView({
     setPickedColor("#007AFF");
   }
 
+  const toggleSaveLoadPopup = () => {
+    setSaveLoadOpen(!isSaveLoadOpen);
+  }
 
   const addGroup = () => {
     onAddGroup(groupName, pickedColor);
@@ -48,6 +52,11 @@ export default function ContentView({
         <Button
           title='Add group'
           onPress={toggleGroupPopup}
+          color={isAddingGroup ? "#ff0800" : "#2196F3"}
+        />
+        <Button
+          title='Save/Load'
+          onPress={toggleSaveLoadPopup}
         />
       </View>
       <View>
@@ -87,7 +96,6 @@ export default function ContentView({
                       >
                         <View
                           style={{backgroundColor: color, width: 35, height: 35, margin: "auto", borderRadius: 3}}
-
                         />
                       </Pressable>
                     ))
@@ -143,6 +151,7 @@ const styles = StyleSheet.create({
   buttons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginVertical: 5,
   },
   addGroupContainer: {
     marginTop: 10,

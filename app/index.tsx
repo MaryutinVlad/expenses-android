@@ -2,17 +2,20 @@ import { Image, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 import 'react-native-get-random-values'
+import { nanoid } from 'nanoid';
 
 import ParallaxScrollView from '@/components/Overlay';
 import ContentView from '@/components/ContentView';
 
 export type Group = {
+  id: string,
   createdOn: string,
   groupName: string,
   groupColor: string,
 };
 
 export type Expense = {
+  id: string,
   createdOn: string,
   expenseGroup: string,
   expenseValue: number,
@@ -84,6 +87,7 @@ export default function HomeScreen() {
   const addGroup = async (groupName: string, pickedColor: string) => {
 
     const groupValues = {
+      id: nanoid(),
       groupName,
       groupColor: pickedColor,
       createdOn: date.toLocaleDateString(),
@@ -153,6 +157,7 @@ export default function HomeScreen() {
     }
     
     const expenseValues = {
+      id: nanoid(),
       expenseGroup: groupName,
       expenseValue: groupValue,
       createdOn: date.toLocaleDateString(),
