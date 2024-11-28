@@ -17,7 +17,7 @@ type Props = PropsWithChildren<{
     groups: Group[],
   },
   onChangeName(nameInput: string): void,
-  onRemoveGroup(groupTargeted: string): void,
+  onRemoveGroup(id: string, name: string): void,
   onRemoveGroups(): void,
 }>;
 

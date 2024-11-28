@@ -52,7 +52,7 @@ export default function ContentView({
         <Button
           title='Add group'
           onPress={toggleGroupPopup}
-          color={isAddingGroup ? "#ff0800" : "#2196F3"}
+          color={isAddingGroup ? "#63b5f6" : "#2196F3"}
         />
         <Button
           title='Save/Load'

@@ -108,14 +108,14 @@ export default function HomeScreen() {
     setUser(updatedUser);
   };
 
-  const removeGroup = async (groupTargeted: string) => {
+  const removeGroup = async (id: string, name: string) => {
 
-    const updatedGroups = user.profile.groups.filter(group => groupTargeted !== group.groupName);
+    const updatedGroups = user.profile.groups.filter(group => id !== group.id);
     const updatedExpenses: ExpensesEntry[] = []
     user.expenses.forEach(month => {
       updatedExpenses.push({
         date: month.date,
-        entries: month.entries.filter(entry => entry.expenseGroup !== groupTargeted)
+        entries: month.entries.filter(entry => entry.expenseGroup !== name)
       })
     });
 

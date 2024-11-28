@@ -1,4 +1,4 @@
-import { View, Text, Button, TextInput, StyleSheet } from "react-native";
+import { View, Text, Button, TextInput, StyleSheet, Pressable } from "react-native";
 import { useState } from "react";
 
 type Props = {
@@ -21,7 +21,6 @@ export default function GroupView({
   const [ inputValue, setInputValue ] = useState("");
 
   const toggleAddExpense = () => {
-    console.log('!!!!!!!!!!!!!!!!')
     setIsAddingExpense(!isAddingExpense);
     setInputValue("");
   }
@@ -39,12 +38,38 @@ export default function GroupView({
   return (
     <View style={styles.container}>
       <View style={styles.subcontainer}>
-        <Button
-          title="+"
+        <Pressable
           onPress={toggleAddExpense}
-          color={isAddingExpense ? "#ff0800" : "#2196F3"}
-        />
-        <Text style={{ color: `${groupColor}`, ...styles.text}}>{groupName} </Text>
+          style={{
+            borderColor: "#2196F3",
+            backgroundColor: `${isAddingExpense ? "#2196F3" : "#ffffff"}`,
+            borderWidth: 1.5,
+            borderRadius: 25,
+            width: 35,
+            height: 35,
+          }}
+        >
+          <Text
+            style={{
+              color: `${isAddingExpense ? "#ffffff" : "#2196F3"}`,
+              fontSize: 35,
+              fontWeight: 100,
+              margin: "auto",
+              lineHeight: 35,
+              textAlign: "center",
+            }}
+          >
+            +
+          </Text>
+        </Pressable>
+        <Text style={{
+          color: `${groupColor}`,
+          fontSize: 25,
+          verticalAlign: "middle",
+          maxWidth: "65%",
+          }}>
+            {groupName} 
+          </Text>
       </View>
       {
         isAddingExpense ? (
@@ -55,18 +80,47 @@ export default function GroupView({
               onChangeText={setInputValue}
               placeholder="type in value"
             />
-            <Button
-              title="save"
-              
+            <Pressable
               onPress={addExpense}
-              disabled={!inputValue}
-            />
+              disabled
+              style={{
+                width: "30%",
+                backgroundColor: `${!inputValue ? "#dadddf" : "#2196F3"}`,
+                borderTopRightRadius: 7,
+                borderBottomRightRadius: 7,
+              }}
+            >
+              <Text
+                style={{
+                  color: `${!inputValue ? "#999999" : "#ffffff"}`,
+                  textAlign: "center",
+                  margin: 0,
+                  padding: 0,
+                  lineHeight: 35,
+                }}
+              >
+                SAVE
+              </Text>
+            </Pressable>
           </View>
         ) : (
-          <>
-            <Text style={styles.text}>{groupValue}</Text>
-            <Text style={styles.text}>{groupValue === 0 ? 0 : ((groupValue / expensesTotal) * 100).toFixed(0)} %</Text>
-          </>
+          <View style={styles.numbers}>
+            <Text style={{
+              width: "65%",
+              textAlign: "right",
+              paddingRight: 15,
+              ...styles.text
+              }}>
+                {groupValue}
+              </Text>
+            <Text style={{
+              width: "35%",
+              textAlign: "right"
+              ,...styles.text
+            }}>
+              {groupValue === 0 ? 0 : ((groupValue / expensesTotal) * 100).toFixed(0)} %
+            </Text>
+          </View>
         )
       }
     </View>
@@ -79,30 +133,39 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 30
+    minHeight: 40,
+    maxHeight: 100,
   },
   subcontainer: {
     flexDirection: "row",
     gap: 10,
+    alignItems: "center",
+    width: "45%",
   },
   text: {
-    fontSize: 20,
+    fontSize: 25,
     verticalAlign: "middle"
   },
+  numbers: {
+    width: "55%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   add: {
+    width: "55%",
     flexDirection: "row",
     justifyContent: "space-around",
     backgroundColor: "#e5eaf3",
-    borderRadius: 10,
+    borderRadius: 7,
     alignItems: "center",
   },
   textInput: {
+    width: "70%",
     textDecorationLine: "underline",
-    height: 30,
+    height: 35,
     padding: 0,
     margin: 0,
     textAlign: "center",
-    minWidth: "40%",
-    fontSize: 16,
+    fontSize: 17,
   },
 })
