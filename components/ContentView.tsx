@@ -28,15 +28,18 @@ export default function ContentView({
   const [ pickedColor, setPickedColor ] = useState("#007AFF");
   const [ groupName, onChangeGroupName ] = useState("");
   const [ filter, setFilter ] = useState(2);
+  const [ encodedData, setEncodedData ] = useState("press encode button to generate exportable data here")
 
   const toggleGroupPopup = () => {
     setIsAddingGroup(!isAddingGroup);
+    setSaveLoadOpen(false);
     onChangeGroupName("");
     setPickedColor("#007AFF");
   }
 
   const toggleSaveLoadPopup = () => {
     setSaveLoadOpen(!isSaveLoadOpen);
+    setIsAddingGroup(false);
   }
 
   const addGroup = () => {
@@ -44,6 +47,13 @@ export default function ContentView({
     setIsAddingGroup(false);
     onChangeGroupName("");
     setPickedColor("#007AFF")
+  }
+
+  const encodeData = () => {
+    let encodedExpenses = btoa(JSON.stringify(expenses))
+    let decodedExpenses = atob(encodedExpenses)
+    console.log(encodedExpenses);
+    console.log(decodedExpenses);
   }
 
   return (
@@ -110,6 +120,20 @@ export default function ContentView({
             </View>
           )
         }
+        {
+          isSaveLoadOpen && (
+            <View style={styles.saveLoadContainer}>
+              <View>
+                <Text style={{fontSize: 20}}>Export</Text>
+                <Text style={{ maxHeight: 30 ,maxWidth: "80%", overflow: "hidden"}}>{encodedData}</Text>
+                <Button
+                  title="encode"
+                  onPress={encodeData}
+                />
+              </View>
+            </View>
+          )
+        }
         <View style={styles.filter}>
           <Text style={{fontSize: 22, verticalAlign: 'bottom'}}>
             Filter by:
@@ -155,6 +179,10 @@ const styles = StyleSheet.create({
   },
   addGroupContainer: {
     marginTop: 10,
+  },
+  saveLoadContainer: {
+    width: "100%",
+    height: "30%",
   },
   addGroupInput: {
     flexDirection: 'row',

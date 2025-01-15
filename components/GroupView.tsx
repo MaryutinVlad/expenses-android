@@ -1,5 +1,7 @@
-import { View, Text, Button, TextInput, StyleSheet, Pressable } from "react-native";
+import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import { useState } from "react";
+
+import shortenValue from "../helpers/shortenValue";
 
 type Props = {
   groupName: string,
@@ -82,7 +84,7 @@ export default function GroupView({
             />
             <Pressable
               onPress={addExpense}
-              disabled
+              disabled={!inputValue ? true : false}
               style={{
                 width: "30%",
                 backgroundColor: `${!inputValue ? "#dadddf" : "#2196F3"}`,
@@ -106,15 +108,15 @@ export default function GroupView({
         ) : (
           <View style={styles.numbers}>
             <Text style={{
-              width: "65%",
+              width: "60%",
               textAlign: "right",
               paddingRight: 15,
               ...styles.text
               }}>
-                {groupValue}
+                {groupValue >= 1000000 ? shortenValue(groupValue) : groupValue}
               </Text>
             <Text style={{
-              width: "35%",
+              width: "40%",
               textAlign: "right"
               ,...styles.text
             }}>
