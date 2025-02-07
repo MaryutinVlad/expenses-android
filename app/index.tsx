@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 
 import ParallaxScrollView from '@/components/Overlay';
 import ContentView from '@/components/ContentView';
+import { group } from 'console';
 
 export type Group = {
   id: string,
@@ -185,7 +186,36 @@ export default function HomeScreen() {
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
     setUser(updatedUser);
+  };
+
+  const mergeGroups = (initialGroups: Group[], importedGroups: Group[]) => {
+
+    const mergedGroups = [];
+
+    initialGroups.map(group => {
+      importedGroups.find(imported => {
+        if (group.groupName !== imported.groupName) {
+          console.log(group.groupName);
+        }
+      })
+    })
   }
+
+  const importData = async (expenses: ExpensesEntry[], groups: Group[]) => {
+
+    console.log(mergeGroups(user.profile.groups, groups));
+
+    /*const updatedUser: User = {
+      profile: {
+        ...user.profile,
+        groups: [],
+      },
+      expenses: user.expenses,
+    };
+
+    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    setUser(updatedUser);*/
+  };
 
   findProfile();
 
@@ -208,6 +238,7 @@ export default function HomeScreen() {
         groups={user.profile.groups}
         expenses={user.expenses}
         dateKey={dateKey}
+        onImportData={importData}
       />
     </ParallaxScrollView>
   );

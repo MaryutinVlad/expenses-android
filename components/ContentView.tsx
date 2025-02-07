@@ -1,6 +1,8 @@
 import { View, Text, Button, StyleSheet, TextInput } from "react-native";
 import { useState } from "react";
 import colors from "../helpers/colors.json";
+import * as FileSystem from "expo-file-system";
+import * as DocumentPicker from "expo-document-picker";
 
 import GroupsView from "@/components/GroupsView";
 
@@ -10,6 +12,7 @@ import { Pressable } from "react-native-gesture-handler";
 type Props = {
   onAddGroup(groupName: string, groupColor: string): void,
   onAddExpense(groupName: string, groupValue: number): void,
+  onImportData(expenses: ExpensesEntry[], groups: Group[]): void,
   groups: Group[],
   expenses: ExpensesEntry[],
   dateKey: string,
@@ -21,6 +24,7 @@ export default function ContentView({
   expenses,
   dateKey,
   onAddExpense,
+  onImportData,
 }: Props) {
 
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
@@ -28,7 +32,8 @@ export default function ContentView({
   const [ pickedColor, setPickedColor ] = useState("#007AFF");
   const [ groupName, onChangeGroupName ] = useState("");
   const [ filter, setFilter ] = useState(2);
-  const [ encodedData, setEncodedData ] = useState("press encode button to generate exportable data here")
+  const { StorageAccessFramework } = FileSystem;
+  const date = new Date();
 
   const toggleGroupPopup = () => {
     setIsAddingGroup(!isAddingGroup);
@@ -49,11 +54,64 @@ export default function ContentView({
     setPickedColor("#007AFF")
   }
 
-  const encodeData = () => {
-    let encodedExpenses = btoa(JSON.stringify(expenses))
-    let decodedExpenses = atob(encodedExpenses)
-    console.log(encodedExpenses);
-    console.log(decodedExpenses);
+  const exportData = async () => {
+    
+    const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
+
+    if (permissions.granted) {
+
+      const uri = permissions.directoryUri;
+      const fileKey = `${date.getDate() + 1}_${date.getMonth() + 1}_${date.getFullYear()}`;
+      const fileContent = {
+        expenses,
+        groups
+      };
+      let fileUri = "";
+
+      await StorageAccessFramework.readDirectoryAsync(uri)
+        .then(files => files.find(file => file.match(fileKey)))
+        .then(fileMatched => {
+
+          if (!fileMatched) {
+            return;
+
+          } else {
+            StorageAccessFramework.deleteAsync(fileMatched)
+              .then(() => console.log("duplicate file deleted"))
+              .catch(err => console.log("error while deleting duplicate file" + " " + err));
+          }
+        })
+        .catch(err => console.log("error while searching for and deleting duplicate file:" + " " + err));
+
+        
+      await StorageAccessFramework.createFileAsync(uri, fileKey, "application/json")
+        .then(result => fileUri = result)
+        .catch(err => console.log("error while creating new file:" + " " + err));
+
+      await StorageAccessFramework.writeAsStringAsync(fileUri, JSON.stringify(fileContent))
+        .then(() => console.log("data exported"))
+        .catch(err => console.log("error while writing into new file:" + " " + err));
+
+    } else {
+      return;
+    }
+  }
+
+  const importData = async () => {
+    await DocumentPicker.getDocumentAsync()
+      .then(document => {
+        if (document === null || document.assets === null) {
+          return;
+        } else {
+          StorageAccessFramework.readAsStringAsync(document.assets[0].uri)
+            .then(data => {
+              const {expenses, groups} = JSON.parse(data);
+              onImportData(expenses, groups);
+            })
+            .catch(err => console.log("error while reading document:" + " " + err));
+        }
+      })
+      .catch(err => console.log("error while getting document:" + " " + err));
   }
 
   return (
@@ -122,13 +180,16 @@ export default function ContentView({
         }
         {
           isSaveLoadOpen && (
-            <View style={styles.saveLoadContainer}>
-              <View>
-                <Text style={{fontSize: 20}}>Export</Text>
-                <Text style={{ maxHeight: 30 ,maxWidth: "80%", overflow: "hidden"}}>{encodedData}</Text>
+            <View>
+              <Text style={{fontSize: 20}}>Data import and export</Text>
+              <View style={{flexDirection: "row", gap: 10}}>
                 <Button
-                  title="encode"
-                  onPress={encodeData}
+                  title="export file"
+                  onPress={exportData}
+                />
+                <Button
+                  title="import file"
+                  onPress={importData}
                 />
               </View>
             </View>
@@ -179,10 +240,6 @@ const styles = StyleSheet.create({
   },
   addGroupContainer: {
     marginTop: 10,
-  },
-  saveLoadContainer: {
-    width: "100%",
-    height: "30%",
   },
   addGroupInput: {
     flexDirection: 'row',
