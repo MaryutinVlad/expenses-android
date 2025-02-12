@@ -6,13 +6,13 @@ import { nanoid } from 'nanoid';
 
 import ParallaxScrollView from '@/components/Overlay';
 import ContentView from '@/components/ContentView';
-import { group } from 'console';
 
 export type Group = {
   id: string,
   createdOn: string,
   groupName: string,
   groupColor: string,
+  earnings: boolean,
 };
 
 export type Expense = {
@@ -33,6 +33,7 @@ type User = {
     createdOn: string,
     avatar: string,
     groups: Group[],
+    lastUpdated: string,
   },
   expenses: ExpensesEntry[],
 };
@@ -47,6 +48,7 @@ export default function HomeScreen() {
       createdOn: date.toLocaleDateString(),
       avatar: '',
       groups: [],
+      lastUpdated: "2/11/2024",
     },
     expenses: [
       {
@@ -62,7 +64,11 @@ export default function HomeScreen() {
     try {
       const profile = await AsyncStorage.getItem('expenses-app');
       if (profile !== null) {
-        setUser(JSON.parse(profile))
+        const user = JSON.parse(profile)
+          if (!user.profile.lastUpdated) {
+            user.profile.lastUpdated = "2/11/2024";
+          }
+        setUser(user)
       } else {
         await AsyncStorage.setItem('expenses-app', JSON.stringify(newProfile))
       }
@@ -92,6 +98,7 @@ export default function HomeScreen() {
       groupName,
       groupColor: pickedColor,
       createdOn: date.toLocaleDateString(),
+      earnings: false,
     };
 
     const updatedUser: User = {
@@ -189,32 +196,138 @@ export default function HomeScreen() {
   };
 
   const mergeGroups = (initialGroups: Group[], importedGroups: Group[]) => {
+    
+    const mergingGroups: { [key: string]: Group } = {};
+    const result: Group[] = [];
+    
+    initialGroups.map(initialGroup => mergingGroups[initialGroup.groupName] =  initialGroup);
+    importedGroups.map(importedGroup => {
+      importedGroup.earnings = false;
+      if (importedGroup.groupName === "Заработала ") {
+        importedGroup.earnings = true;
+      }
+      mergingGroups[importedGroup.groupName] = importedGroup
+    });
 
-    const mergedGroups = [];
+    for (let group in mergingGroups) {
+      result.push(mergingGroups[group]);
+    }
 
-    initialGroups.map(group => {
-      importedGroups.find(imported => {
-        if (group.groupName !== imported.groupName) {
-          console.log(group.groupName);
+    return result;
+  };
+
+  const mergeExpenses = (initialExpenses: ExpensesEntry[], importedExpenses: ExpensesEntry[]) => {
+
+    const lastUpdated = user.profile.lastUpdated;
+    const lastUpdatedKey = lastUpdated.replace(/\/\d{1,}\//, "/");
+
+    const mergedExpenses: ExpensesEntry[] = [];
+    
+    let lastUpdatedIndex = importedExpenses.findIndex((expensesMonth) => expensesMonth.date === lastUpdatedKey);
+
+    if (lastUpdatedIndex < 0) {
+      //thus there've never been data exchange before and the file should be imported entirely
+      if (initialExpenses.entries.length === 0) {
+
+        importedExpenses.map(expensesMonth => mergedExpenses.push(expensesMonth));
+        return mergedExpenses;
+      }
+
+      initialExpenses.map(expensesMonth => mergedExpenses.push(expensesMonth));
+    } else {
+      for (let updatedIndex = 0; updatedIndex < lastUpdatedIndex; updatedIndex ++) {
+        //copying expenses before last updated date beacause they are identical in initial data and imported file
+        mergedExpenses.push(importedExpenses[updatedIndex]);
+      };
+
+      const relevantMonth: ExpensesEntry = { date: lastUpdatedKey, entries: []};
+
+      const longerEntriesArray = initialExpenses[lastUpdatedIndex].entries.length > importedExpenses[lastUpdatedIndex].entries.length ?
+        initialExpenses[lastUpdatedIndex].entries : importedExpenses[lastUpdatedIndex].entries;
+
+      const shorterEntriesArray = initialExpenses[lastUpdatedIndex].entries.length < importedExpenses[lastUpdatedIndex].entries.length ?
+      initialExpenses[lastUpdatedIndex].entries : importedExpenses[lastUpdatedIndex].entries;
+
+      const daysChange: { [key: string]: number} = {};
+      
+      longerEntriesArray.map((entry, index) => {
+
+        if (shorterEntriesArray[index]) {
+
+          if (entry.id === shorterEntriesArray[index].id) {
+            relevantMonth.entries.push(entry);
+          } else {
+
+            if (entry.createdOn !== shorterEntriesArray[index].createdOn) {
+
+              const longerCreationDay = entry.createdOn.split("/")[0];
+              const shorterCreationDay = shorterEntriesArray[index].createdOn.split("/")[0];
+
+              if (longerCreationDay < shorterCreationDay) {
+
+                daysChange[shorterEntriesArray[index].createdOn] = index;
+
+                relevantMonth.entries.push(entry);
+                relevantMonth.entries.push(shorterEntriesArray[index]);
+              } else {
+
+                daysChange[entry.createdOn] = index;
+
+                relevantMonth.entries.push(shorterEntriesArray[index]);
+                relevantMonth.entries.push(entry);
+              }
+            } else {
+              relevantMonth.entries.push(entry);
+              relevantMonth.entries.push(shorterEntriesArray[index]);
+            }
+            
+          }
+        } else {
+
+          if (longerEntriesArray[index - 1]) {
+            if (entry.createdOn === longerEntriesArray[index - 1].createdOn) {
+              relevantMonth.entries.push(entry);
+            } else {
+
+              const curCreationDay = entry.createdOn.split("/")[0];
+              const prevCreationDay = longerEntriesArray[index - 1].createdOn.split("/")[0];
+
+              if (curCreationDay > prevCreationDay) {
+                relevantMonth.entries.push(entry);
+              } else {
+
+                const insertionIndex = daysChange[entry.createdOn];
+                relevantMonth.entries.splice(insertionIndex, 0, entry);
+              }
+            }
+          }
         }
-      })
-    })
-  }
+      });
 
-  const importData = async (expenses: ExpensesEntry[], groups: Group[]) => {
+      mergedExpenses.push(relevantMonth);
 
-    console.log(mergeGroups(user.profile.groups, groups));
+    }
+    
+    return mergedExpenses;
+  };
 
-    /*const updatedUser: User = {
+  const importData = async (importedExpenses: ExpensesEntry[], importedGroups: Group[], relevantOn: string) => {
+
+    const updatedGroups = mergeGroups(user.profile.groups, importedGroups);
+    const updatedExpenses = mergeExpenses(user.expenses, importedExpenses);
+
+    const updatedUser: User = {
       profile: {
         ...user.profile,
-        groups: [],
+        groups: updatedGroups,
+        lastUpdated: relevantOn
       },
-      expenses: user.expenses,
+      expenses: updatedExpenses,
     };
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
-    setUser(updatedUser);*/
+
+    setUser(updatedUser);
   };
 
   findProfile();

@@ -12,7 +12,7 @@ import { Pressable } from "react-native-gesture-handler";
 type Props = {
   onAddGroup(groupName: string, groupColor: string): void,
   onAddExpense(groupName: string, groupValue: number): void,
-  onImportData(expenses: ExpensesEntry[], groups: Group[]): void,
+  onImportData(expenses: ExpensesEntry[], groups: Group[], relevantOn: string): void,
   groups: Group[],
   expenses: ExpensesEntry[],
   dateKey: string,
@@ -64,7 +64,8 @@ export default function ContentView({
       const fileKey = `${date.getDate() + 1}_${date.getMonth() + 1}_${date.getFullYear()}`;
       const fileContent = {
         expenses,
-        groups
+        groups,
+        relevantOn: date.toLocaleDateString()
       };
       let fileUri = "";
 
@@ -105,8 +106,8 @@ export default function ContentView({
         } else {
           StorageAccessFramework.readAsStringAsync(document.assets[0].uri)
             .then(data => {
-              const {expenses, groups} = JSON.parse(data);
-              onImportData(expenses, groups);
+              const {expenses, groups, relevantOn} = JSON.parse(data);
+              onImportData(expenses, groups, relevantOn);
             })
             .catch(err => console.log("error while reading document:" + " " + err));
         }
