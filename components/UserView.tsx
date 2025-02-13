@@ -9,7 +9,7 @@ export type UserProps = {
   avatar: ReactElement,
   groups: Group[],
   onChangeName(nameInput: string): void,
-  onRemoveGroup(groupTargeted: string): void,
+  onRemoveGroup(id: string, name: string): void,
   onRemoveGroups(): void,
 }
 
@@ -17,14 +17,16 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
 
   const [ areSettingsShown, setAreSettingsShown ] = useState(false);
   const [ nameInput, setNameInput ] = useState(name);
-  const [ groupTargeted, setGroupTargeted ] = useState("");
+  const [ groupTargeted, setGroupTargeted ] = useState({ id: "", name: ""});
   const [ isConfirmationShown, setIsConfirmationShown ] = useState(false);
 
   const toggleSettings = () => {
+    if (!areSettingsShown) {
+      setIsConfirmationShown(false);
+      setGroupTargeted({ id: "", name: ""});
+    }
     setAreSettingsShown(!areSettingsShown);
     setNameInput(name);
-    setIsConfirmationShown(false);
-    setGroupTargeted("");
   };
 
   const changeName = () => {
@@ -32,8 +34,8 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
   };
 
   const removeGroup = () => {
-    onRemoveGroup(groupTargeted);
-    setGroupTargeted("");
+    onRemoveGroup(groupTargeted.id, groupTargeted.name);
+    setGroupTargeted({ id: "", name: ""});
   };
 
   const toggleConfirmation = () => {
@@ -102,12 +104,12 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
               <Text style={styles.settingsItemTitle}>Delete group:</Text>
               <View style={{
                 flexDirection: "row",
-                justifyContent: "space-between",
+                justifyContent: "flex-end",
                 width: "50%",
                 flexWrap: "wrap",
                 gap: 5
               }}>{
-                groupTargeted ? (
+                groupTargeted.id ? (
                   <View style={{
                     flexDirection: "row",
                     gap: 30,
@@ -118,16 +120,16 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
                     />
                     <Button
                       title="no"
-                      onPress={() => setGroupTargeted("")}
+                      onPress={() => setGroupTargeted({ id: "", name: ""})}
                     />
                   </View>
                 ) :
                   groups.map(group => (
                     <Button
-                      key={group.groupName + "-delete"}
+                      key={group.id}
                       title={group.groupName}
                       color={group.groupColor}
-                      onPress={() => setGroupTargeted(group.groupName)}
+                      onPress={() => setGroupTargeted({ id: group.id, name: group.groupName })}
                     />
                   ))
                 }

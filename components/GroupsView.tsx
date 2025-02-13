@@ -1,5 +1,4 @@
 import { View, Text, StyleSheet } from "react-native";
-import { nanoid } from "nanoid";
 
 import GroupView from "./GroupView";
 import { Group, ExpensesEntry } from "@/app";
@@ -25,24 +24,62 @@ export default function GroupsView({
  onAddExpense,
 }: Props) {
 
-  const groupColors : GroupColors = {}
+  const groupColors : GroupColors = {};
 
   groups.map(group => groupColors[group.groupName] = group.groupColor);
 
   const { expensesSummary, expensesHistory } = showExpenses(filter, expenses, groups, dateKey);
-  const expensesTotal = expensesSummary.reduce(((accum, cur) => accum + cur.groupValue), 0);
+  let expensesTotal = 0;
+  let profitsTotal = 0;
+
+  expensesSummary.map(group => group.earnings ? profitsTotal += group.groupValue : expensesTotal += group.groupValue);
 
   return (
     <View style={styles.container}>
+      <View style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingHorizontal: 10,
+        borderWidth: .5,
+        borderRadius: 7,
+      }}>
+        <Text style={styles.totalsText}>
+          Total:
+        </Text>
+        <View style={{flexDirection: "row", gap: 3}}>
+          <Text style={{
+            ...styles.totalsText,
+            color: "green"
+          }}>
+            pr:
+          </Text>
+          <Text style={styles.totalsText}>
+            {profitsTotal}
+          </Text>
+        </View>
+        <View style={{flexDirection: "row", gap: 3}}>
+          <Text style={{
+            ...styles.totalsText,
+            color: "red"
+          }}>
+            ex:
+          </Text>
+          <Text style={styles.totalsText}>
+            {expensesTotal}
+          </Text>
+        </View>
+      </View>
       {
-        expensesSummary.map(({ groupName, groupValue }) => (
+        expensesSummary.map(({ id, groupName, groupValue, earnings }) => 
+        (
           <GroupView
-            key={groupName + '-summary'}
+            key={id}
             groupName={groupName}
             groupValue={groupValue}
             groupColor={groupColors[groupName]}
             expensesTotal={expensesTotal}
             onAddExpense={onAddExpense}
+            earnings={earnings}
           />
         ))
       }
@@ -51,9 +88,9 @@ export default function GroupsView({
           History
         </Text>
         {
-          expensesHistory.map(({ expenseGroup, expenseValue, createdOn }) => (
+          expensesHistory.map(({ id, expenseGroup, expenseValue, createdOn }) => (
             <View
-              key={nanoid(10)}
+              key={id}
               style={styles.historyUnit}
             >
               <Text style={styles.historyText}>
@@ -76,7 +113,7 @@ export default function GroupsView({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "column",
-    gap: 5,
+    gap: 7,
   },
   history: {
     marginTop: 10,
@@ -88,5 +125,8 @@ const styles = StyleSheet.create({
   },
   historyText: {
     fontSize: 18,
+  },
+  totalsText: {
+    fontSize: 23,
   }
 })

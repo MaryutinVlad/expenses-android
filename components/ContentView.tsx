@@ -1,31 +1,21 @@
 import { View, Text, Button, StyleSheet, TextInput } from "react-native";
 import { useState } from "react";
-import Slider from "@react-native-community/slider";
+import colors from "../helpers/colors.json";
+import * as FileSystem from "expo-file-system";
+import * as DocumentPicker from "expo-document-picker";
 
 import GroupsView from "@/components/GroupsView";
 
 import { Group, ExpensesEntry } from "@/app";
-
-type Tints = {
-  r: string,
-  g: string,
-  b: string,
-}
+import { Pressable } from "react-native-gesture-handler";
 
 type Props = {
   onAddGroup(groupName: string, groupColor: string): void,
   onAddExpense(groupName: string, groupValue: number): void,
+  onImportData(expenses: ExpensesEntry[], groups: Group[], relevantOn: string): void,
   groups: Group[],
   expenses: ExpensesEntry[],
   dateKey: string,
-};
-
-let hexTint = "00";
-
-const colorPalette = {
-  r: "00",
-  g: "00",
-  b: "00",
 };
 
 export default function ContentView({
@@ -34,41 +24,95 @@ export default function ContentView({
   expenses,
   dateKey,
   onAddExpense,
+  onImportData,
 }: Props) {
 
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
-  const [ pickedColor, setPickedColor ] = useState("#000000");
+  const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
+  const [ pickedColor, setPickedColor ] = useState("#007AFF");
   const [ groupName, onChangeGroupName ] = useState("");
   const [ filter, setFilter ] = useState(2);
+  const { StorageAccessFramework } = FileSystem;
+  const date = new Date();
 
   const toggleGroupPopup = () => {
     setIsAddingGroup(!isAddingGroup);
+    setSaveLoadOpen(false);
     onChangeGroupName("");
+    setPickedColor("#007AFF");
   }
 
-  //doesn't work anymore in dev mode
-
-  const changeColor = (value:number, tint: string) => {
-
-    hexTint = Math.round(value).toString(16);
-
-    if (hexTint.length === 1) {
-      hexTint = '0' + hexTint;
-    }
-
-    colorPalette[tint as keyof Tints] = hexTint;
-
-    setPickedColor(() => "#" + colorPalette.r + colorPalette.g + colorPalette.b);
+  const toggleSaveLoadPopup = () => {
+    setSaveLoadOpen(!isSaveLoadOpen);
+    setIsAddingGroup(false);
   }
 
   const addGroup = () => {
     onAddGroup(groupName, pickedColor);
     setIsAddingGroup(false);
     onChangeGroupName("");
-    hexTint = "0";
-    colorPalette.r = "00";
-    colorPalette.g = "00";
-    colorPalette.b = "00";
+    setPickedColor("#007AFF")
+  }
+
+  const exportData = async () => {
+    
+    const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
+
+    if (permissions.granted) {
+
+      const uri = permissions.directoryUri;
+      const fileKey = `${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}`;
+      const fileContent = {
+        expenses,
+        groups,
+        relevantOn: date.toLocaleDateString()
+      };
+      let fileUri = "";
+
+      await StorageAccessFramework.readDirectoryAsync(uri)
+        .then(files => files.find(file => file.match(fileKey)))
+        .then(fileMatched => {
+
+          if (!fileMatched) {
+            return;
+
+          } else {
+            StorageAccessFramework.deleteAsync(fileMatched)
+              .then(() => console.log("duplicate file deleted"))
+              .catch(err => console.log("error while deleting duplicate file" + " " + err));
+          }
+        })
+        .catch(err => console.log("error while searching for and deleting duplicate file:" + " " + err));
+
+        
+      await StorageAccessFramework.createFileAsync(uri, fileKey, "application/json")
+        .then(result => fileUri = result)
+        .catch(err => console.log("error while creating new file:" + " " + err));
+
+      await StorageAccessFramework.writeAsStringAsync(fileUri, JSON.stringify(fileContent))
+        .then(() => console.log("data exported"))
+        .catch(err => console.log("error while writing into new file:" + " " + err));
+
+    } else {
+      return;
+    }
+  }
+
+  const importData = async () => {
+    await DocumentPicker.getDocumentAsync()
+      .then(document => {
+        if (document === null || document.assets === null) {
+          return;
+        } else {
+          StorageAccessFramework.readAsStringAsync(document.assets[0].uri)
+            .then(data => {
+              const {expenses, groups, relevantOn} = JSON.parse(data);
+              onImportData(expenses, groups, relevantOn);
+            })
+            .catch(err => console.log("error while reading document:" + " " + err));
+        }
+      })
+      .catch(err => console.log("error while getting document:" + " " + err));
   }
 
   return (
@@ -77,6 +121,11 @@ export default function ContentView({
         <Button
           title='Add group'
           onPress={toggleGroupPopup}
+          color={isAddingGroup ? "#63b5f6" : "#2196F3"}
+        />
+        <Button
+          title='Save/Load'
+          onPress={toggleSaveLoadPopup}
         />
       </View>
       <View>
@@ -92,40 +141,56 @@ export default function ContentView({
                   defaultValue={groupName}
                   maxLength={15}
                   placeholder="type in group name"
-                  style={{fontSize: 20, textDecorationLine: "underline", color: pickedColor}}
+                  style={{fontSize: 20, textDecorationLine: "underline", color: pickedColor, width: "60%" }}
                 />
               </View>
               <View>
                 <Text style={{fontSize: 20}}>
                   Pick group color: &#x2193;
                 </Text>
-                <Slider
-                  style={{width: '100%', height: 50}}
-                  onValueChange={(value) => changeColor(value, "r")}
-                  minimumValue={0}
-                  maximumValue={255}
-                  minimumTrackTintColor={pickedColor}
-                  maximumTrackTintColor={pickedColor}
-                />
-                <Slider
-                  style={{width: '100%', height: 50}}
-                  onValueChange={(value) => changeColor(value, "g")}
-                  minimumValue={0}
-                  maximumValue={255}
-                  minimumTrackTintColor={pickedColor}
-                  maximumTrackTintColor={pickedColor}
-                />
-                <Slider
-                  style={{width: '100%', height: 50}}
-                  onValueChange={(value) => changeColor(value, "b")}
-                  minimumValue={0}
-                  maximumValue={255}
-                  minimumTrackTintColor={pickedColor}
-                  maximumTrackTintColor={pickedColor}
-                />
+                <View style={{
+                  width: 328,
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  marginHorizontal: "auto",
+                  marginVertical: 10,
+                }}>
+                  {
+                    colors.map(color => (
+                      <Pressable
+                        key={color}
+                        onPress={() => setPickedColor(color)}
+                        style={{ width: 40, height: 40, borderWidth: .5, borderRadius: 3 }}
+                      >
+                        <View
+                          style={{backgroundColor: color, width: 35, height: 35, margin: "auto", borderRadius: 3}}
+                        />
+                      </Pressable>
+                    ))
+                  }
+                </View>
                 <Button
                   title="save"
+                  color={pickedColor}
                   onPress={addGroup}
+                />
+              </View>
+            </View>
+          )
+        }
+        {
+          isSaveLoadOpen && (
+            <View>
+              <Text style={{fontSize: 20}}>Data import and export</Text>
+              <View style={{flexDirection: "row", gap: 10}}>
+                <Button
+                  title="export file"
+                  onPress={exportData}
+                />
+                <Button
+                  title="import file"
+                  onPress={importData}
                 />
               </View>
             </View>
@@ -172,6 +237,7 @@ const styles = StyleSheet.create({
   buttons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginVertical: 5,
   },
   addGroupContainer: {
     marginTop: 10,
@@ -179,7 +245,7 @@ const styles = StyleSheet.create({
   addGroupInput: {
     flexDirection: 'row',
     alignItems: "center",
-    gap: 0,
+    gap: 10,
   },
   filter: {
     flexDirection: 'row',
