@@ -1,12 +1,15 @@
 import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import { useState } from "react";
+import { LinearGradient } from "expo-linear-gradient";
 
 import shortenValue from "../helpers/shortenValue";
+import { Screen } from "expo-router/build/views/Screen";
 
 type Props = {
   groupName: string,
   groupValue: number,
   groupColor: string,
+  earnings: boolean,
   expensesTotal: number,
   onAddExpense( groupName: string, groupValue: number ): void,
 }
@@ -15,12 +18,14 @@ export default function GroupView({
   groupName,
   groupValue,
   groupColor,
+  earnings,
   expensesTotal,
   onAddExpense,
 }: Props) {
 
   const [ isAddingExpense, setIsAddingExpense ] = useState(false);
   const [ inputValue, setInputValue ] = useState("");
+  const percentage = groupValue === 0 ? 0 : (groupValue / expensesTotal);
 
   const toggleAddExpense = () => {
     setIsAddingExpense(!isAddingExpense);
@@ -38,13 +43,20 @@ export default function GroupView({
   }
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      style={styles.container}
+      colors={[`${groupColor}25`, "transparent"]}
+      start={{ x: 0, y: 0}}
+      end={{ x: 1, y: 1}}
+      locations={[percentage, percentage]}
+      dither={false}
+    >
       <View style={styles.subcontainer}>
         <Pressable
           onPress={toggleAddExpense}
           style={{
             borderColor: "#2196F3",
-            backgroundColor: `${isAddingExpense ? "#2196F3" : "#ffffff"}`,
+            backgroundColor: `${isAddingExpense ? "#2196F3" : "transparent"}`,
             borderWidth: 1.5,
             borderRadius: 25,
             width: 35,
@@ -54,7 +66,7 @@ export default function GroupView({
           <Text
             style={{
               color: `${isAddingExpense ? "#ffffff" : "#2196F3"}`,
-              fontSize: 35,
+              fontSize: 30,
               fontWeight: 100,
               margin: "auto",
               lineHeight: 35,
@@ -66,9 +78,8 @@ export default function GroupView({
         </Pressable>
         <Text style={{
           color: `${groupColor}`,
-          fontSize: 25,
+          fontSize: 24,
           verticalAlign: "middle",
-          maxWidth: "65%",
           }}>
             {groupName} 
           </Text>
@@ -86,18 +97,15 @@ export default function GroupView({
               onPress={addExpense}
               disabled={!inputValue ? true : false}
               style={{
-                width: "30%",
+                width: "100%",
                 backgroundColor: `${!inputValue ? "#dadddf" : "#2196F3"}`,
-                borderTopRightRadius: 7,
-                borderBottomRightRadius: 7,
+                borderRadius: 7,
               }}
             >
               <Text
                 style={{
                   color: `${!inputValue ? "#999999" : "#ffffff"}`,
                   textAlign: "center",
-                  margin: 0,
-                  padding: 0,
                   lineHeight: 35,
                 }}
               >
@@ -108,33 +116,24 @@ export default function GroupView({
         ) : (
           <View style={styles.numbers}>
             <Text style={{
-              width: "60%",
               textAlign: "right",
-              paddingRight: 15,
               ...styles.text
               }}>
                 {groupValue >= 1000000 ? shortenValue(groupValue) : groupValue}
-              </Text>
-            <Text style={{
-              width: "40%",
-              textAlign: "right"
-              ,...styles.text
-            }}>
-              {groupValue === 0 ? 0 : ((groupValue / expensesTotal) * 100).toFixed(0)} %
             </Text>
           </View>
         )
       }
-    </View>
+    </LinearGradient>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    borderRadius: 5,
     minHeight: 40,
     maxHeight: 100,
   },
@@ -142,32 +141,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     alignItems: "center",
-    width: "45%",
   },
   text: {
-    fontSize: 25,
+    fontSize: 23,
     verticalAlign: "middle"
   },
   numbers: {
-    width: "55%",
     flexDirection: "row",
     justifyContent: "space-between",
   },
   add: {
-    width: "55%",
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "space-around",
     backgroundColor: "#e5eaf3",
     borderRadius: 7,
     alignItems: "center",
+    width: "35%",
   },
   textInput: {
-    width: "70%",
     textDecorationLine: "underline",
-    height: 35,
-    padding: 0,
-    margin: 0,
-    textAlign: "center",
     fontSize: 17,
   },
 })

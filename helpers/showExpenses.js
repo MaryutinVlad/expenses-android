@@ -11,7 +11,8 @@ export default function showExpenses(filter, expenses, groups, dateKey) {
       expensesSummary.push({
         id: group.id,
         groupName: group.groupName,
-        groupValue: 0
+        groupValue: 0,
+        earnings: group.earnings,
       })
     }
 
@@ -82,6 +83,7 @@ export default function showExpenses(filter, expenses, groups, dateKey) {
       id: group.id,
       groupName: group.groupName,
       groupValue: subResult[group.groupName] ? subResult[group.groupName] : 0,
+      earnings: group.earnings,
     })
   }
 

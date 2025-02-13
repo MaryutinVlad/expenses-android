@@ -24,17 +24,53 @@ export default function GroupsView({
  onAddExpense,
 }: Props) {
 
-  const groupColors : GroupColors = {}
+  const groupColors : GroupColors = {};
 
   groups.map(group => groupColors[group.groupName] = group.groupColor);
 
   const { expensesSummary, expensesHistory } = showExpenses(filter, expenses, groups, dateKey);
-  const expensesTotal = expensesSummary.reduce(((accum, cur) => accum + cur.groupValue), 0);
+  let expensesTotal = 0;
+  let profitsTotal = 0;
+
+  expensesSummary.map(group => group.earnings ? profitsTotal += group.groupValue : expensesTotal += group.groupValue);
 
   return (
     <View style={styles.container}>
+      <View style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingHorizontal: 10,
+        borderWidth: .5,
+        borderRadius: 7,
+      }}>
+        <Text style={styles.totalsText}>
+          Total:
+        </Text>
+        <View style={{flexDirection: "row", gap: 3}}>
+          <Text style={{
+            ...styles.totalsText,
+            color: "green"
+          }}>
+            pr:
+          </Text>
+          <Text style={styles.totalsText}>
+            {profitsTotal}
+          </Text>
+        </View>
+        <View style={{flexDirection: "row", gap: 3}}>
+          <Text style={{
+            ...styles.totalsText,
+            color: "red"
+          }}>
+            ex:
+          </Text>
+          <Text style={styles.totalsText}>
+            {expensesTotal}
+          </Text>
+        </View>
+      </View>
       {
-        expensesSummary.map(({ id, groupName, groupValue }) => 
+        expensesSummary.map(({ id, groupName, groupValue, earnings }) => 
         (
           <GroupView
             key={id}
@@ -43,6 +79,7 @@ export default function GroupsView({
             groupColor={groupColors[groupName]}
             expensesTotal={expensesTotal}
             onAddExpense={onAddExpense}
+            earnings={earnings}
           />
         ))
       }
@@ -88,5 +125,8 @@ const styles = StyleSheet.create({
   },
   historyText: {
     fontSize: 18,
+  },
+  totalsText: {
+    fontSize: 23,
   }
 })

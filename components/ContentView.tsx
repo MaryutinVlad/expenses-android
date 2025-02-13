@@ -61,7 +61,7 @@ export default function ContentView({
     if (permissions.granted) {
 
       const uri = permissions.directoryUri;
-      const fileKey = `${date.getDate() + 1}_${date.getMonth() + 1}_${date.getFullYear()}`;
+      const fileKey = `${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}`;
       const fileContent = {
         expenses,
         groups,

@@ -1,4 +1,4 @@
-import { Image, StyleSheet } from 'react-native';
+import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 import 'react-native-get-random-values'
@@ -342,7 +342,7 @@ export default function HomeScreen() {
       headerImage={
         <Image
           source={require('@/assets/images/logo.jpg')}
-          style={styles.logo}
+          style={{margin: "auto"}}
         />
       }>
       <ContentView
@@ -356,18 +356,3 @@ export default function HomeScreen() {
     </ParallaxScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  logo: {
-    margin: 'auto',
-  },
-});
