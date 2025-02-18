@@ -2,6 +2,7 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import { useState } from "react";
 
 import containers from "@/styles/containers";
+import forms from "@/styles/forms";
 
 type Props = {
   defaultValue: string,
@@ -26,30 +27,17 @@ export default function InputView({
         onChangeText={setInputValue}
         placeholder="type in name"
         maxLength={12}
-        style={{
-          height: 32,
-          fontSize: 18,
-          paddingBottom: 5,
-          paddingTop: 5,
-          paddingLeft: 10,
-        }}
+        style={forms.textInput}
       />
       <Pressable
         onPress={saveValue}
         disabled={!inputValue ? true : false}
         style={{
           backgroundColor: `${!inputValue ? "#dadddf" : "#2196F3"}`,
-          borderRadius: 4,
-          marginLeft: "auto",
-          justifyContent: "center",
-          paddingHorizontal: 6
+          ...forms.submit,
         }}
       >
-        <Text
-          style={{
-            color: `${!inputValue ? "#999999" : "#ffffff"}`
-          }}
-        >
+        <Text style={{ color: `${!inputValue ? "#999999" : "#ffffff"}` }}>
           SAVE
         </Text>
       </Pressable>

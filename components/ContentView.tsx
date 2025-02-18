@@ -1,10 +1,15 @@
-import { View, Text, Button, StyleSheet, TextInput } from "react-native";
+import { View, Text, Button, TextInput } from "react-native";
 import { useState } from "react";
 import colors from "../helpers/colors.json";
 import * as FileSystem from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 
 import GroupsView from "@/components/GroupsView";
+
+import containers from "@/styles/containers";
+import forms from "@/styles/forms";
+import fonts from "@/styles/fonts";
+import assets from "@/styles/assets";
 
 import { Group, ExpensesEntry } from "@/app";
 import { Pressable } from "react-native-gesture-handler";
@@ -116,8 +121,8 @@ export default function ContentView({
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.buttons}>
+    <View style={containers.stdList}>
+      <View style={containers.rowApart}>
         <Button
           title='Add group'
           onPress={toggleGroupPopup}
@@ -131,9 +136,9 @@ export default function ContentView({
       <View>
         {
           isAddingGroup && (
-            <View style={styles.addGroupContainer}>
-              <View style={styles.addGroupInput}>
-                <Text style={{fontSize: 20}}>
+            <View style={containers.popup}>
+              <View style={containers.rowApart}>
+                <Text style={fonts.stdHeader}>
                   Group name:
                 </Text>
                 <TextInput
@@ -141,30 +146,26 @@ export default function ContentView({
                   defaultValue={groupName}
                   maxLength={15}
                   placeholder="type in group name"
-                  style={{fontSize: 20, textDecorationLine: "underline", color: pickedColor, width: "60%" }}
+                  style={forms.textInput}
                 />
               </View>
               <View>
-                <Text style={{fontSize: 20}}>
+                <Text style={fonts.stdHeader}>
                   Pick group color: &#x2193;
                 </Text>
-                <View style={{
-                  width: 328,
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: 8,
-                  marginHorizontal: "auto",
-                  marginVertical: 10,
-                }}>
+                <View style={containers.colorPalette}>
                   {
                     colors.map(color => (
                       <Pressable
                         key={color}
                         onPress={() => setPickedColor(color)}
-                        style={{ width: 40, height: 40, borderWidth: .5, borderRadius: 3 }}
+                        style={containers.color}
                       >
                         <View
-                          style={{backgroundColor: color, width: 35, height: 35, margin: "auto", borderRadius: 3}}
+                          style={{
+                            backgroundColor: color,
+                            ...assets.color
+                          }}
                         />
                       </Pressable>
                     ))
@@ -181,9 +182,9 @@ export default function ContentView({
         }
         {
           isSaveLoadOpen && (
-            <View>
-              <Text style={{fontSize: 20}}>Data import and export</Text>
-              <View style={{flexDirection: "row", gap: 10}}>
+            <View style={containers.popup}>
+              <Text style={fonts.stdHeader}>Data import and export</Text>
+              <View style={containers.rowTogether}>
                 <Button
                   title="export file"
                   onPress={exportData}
@@ -196,11 +197,14 @@ export default function ContentView({
             </View>
           )
         }
-        <View style={styles.filter}>
-          <Text style={{fontSize: 22, verticalAlign: 'bottom'}}>
+        <View style={{
+          ...containers.rowApart,
+          marginTop: 10,
+        }}>
+          <Text style={fonts.titleOnButton}>
             Filter by:
           </Text>
-          <View style={styles.filterButtons}>
+          <View style={containers.rowTogether}>
             <Button
               title="day"
               disabled={filter === 0 ? true : false}
@@ -229,35 +233,3 @@ export default function ContentView({
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginVertical: 20,
-  },
-  buttons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 5,
-  },
-  addGroupContainer: {
-    marginTop: 10,
-  },
-  addGroupInput: {
-    flexDirection: 'row',
-    alignItems: "center",
-    gap: 10,
-  },
-  filter: {
-    flexDirection: 'row',
-    marginVertical: 10,
-    justifyContent: 'space-between',
-  },
-  filterButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 15,
-  },
-  filterButton: {
-    backgroundColor: 'black'
-  }
-});

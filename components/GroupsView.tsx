@@ -112,11 +112,12 @@ export default function GroupsView({
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 10,
     flexDirection: "column",
-    gap: 7,
+    gap: 8,
   },
   history: {
-    marginTop: 10,
+    marginVertical: 10,
   },
   historyUnit: {
     flexDirection: 'row',
