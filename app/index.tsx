@@ -78,6 +78,7 @@ export default function HomeScreen() {
   }
 
   const changeName = async (nameInput: string) => {
+    console.log(nameInput)
 
     const updatedUser: User = {
       profile: {

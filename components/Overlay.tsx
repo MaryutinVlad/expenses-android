@@ -1,12 +1,13 @@
 import type { PropsWithChildren, ReactElement } from 'react';
 import type { Group } from '@/app';
+
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, useColorScheme, View, Image } from 'react-native';
-import Animated, {
-  useAnimatedRef,
-} from 'react-native-reanimated';
+import { useColorScheme, View, Image } from 'react-native';
+import Animated, { useAnimatedRef } from 'react-native-reanimated';
 
 import UserView from '@/components/UserView';
+import containers from '@/styles/containers';
+import assets from "@/styles/assets";
 
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
@@ -36,13 +37,12 @@ export default function ParallaxScrollView({
 
   return (
     <GestureHandlerRootView>
-      <View style={styles.container}>
+      <View style={containers.app}>
         <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} showsVerticalScrollIndicator={false}>
           <Animated.View
-            style={[
-              styles.header,
+            style={
               { backgroundColor: headerBackgroundColor[colorScheme] }
-            ]}>
+            }>
             {headerImage}
             <UserView
               name={user.name}
@@ -52,36 +52,15 @@ export default function ParallaxScrollView({
               onRemoveGroups={onRemoveGroups}
               avatar={
                 <Image
-                  source={require('@/assets/images/defaultAvatar.png')}
-                  style={styles.avatar}
+                  source={require("@/assets/images/defaultAvatar.png")}
+                  style={assets.icon}
                 />
               }
             />
           </Animated.View>
-          <View style={styles.content}>{children}</View>
+          <View>{children}</View>
         </Animated.ScrollView>
       </View>
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 10,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    flex: 1,
-    margin: 0,
-    paddingTop: 35,
-  },
-  content: {
-    flex: 1,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    objectFit: 'contain',
-  },
-});

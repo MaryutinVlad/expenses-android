@@ -2,8 +2,9 @@ import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 
+import InputView from "./InputView";
+
 import shortenValue from "../helpers/shortenValue";
-import { Screen } from "expo-router/build/views/Screen";
 
 type Props = {
   groupName: string,
@@ -24,22 +25,19 @@ export default function GroupView({
 }: Props) {
 
   const [ isAddingExpense, setIsAddingExpense ] = useState(false);
-  const [ inputValue, setInputValue ] = useState("");
   const percentage = groupValue === 0 ? 0 : (groupValue / expensesTotal);
 
   const toggleAddExpense = () => {
     setIsAddingExpense(!isAddingExpense);
-    setInputValue("");
   }
 
-  const addExpense = () => {
-    if (!Number(inputValue)) {
+  const addExpense = (valueInput: string) => {
+    if (!Number(valueInput)) {
       console.log("invalid input");
       return
     }
     setIsAddingExpense(false);
-    setInputValue("");
-    onAddExpense(groupName, Number(inputValue));
+    onAddExpense(groupName, Number(valueInput));
   }
 
   return (
@@ -86,33 +84,10 @@ export default function GroupView({
       </View>
       {
         isAddingExpense ? (
-          <View style={styles.add}>
-            <TextInput
-              style={styles.textInput}
-              value={inputValue}
-              onChangeText={setInputValue}
-              placeholder="type in value"
-            />
-            <Pressable
-              onPress={addExpense}
-              disabled={!inputValue ? true : false}
-              style={{
-                width: "100%",
-                backgroundColor: `${!inputValue ? "#dadddf" : "#2196F3"}`,
-                borderRadius: 7,
-              }}
-            >
-              <Text
-                style={{
-                  color: `${!inputValue ? "#999999" : "#ffffff"}`,
-                  textAlign: "center",
-                  lineHeight: 35,
-                }}
-              >
-                SAVE
-              </Text>
-            </Pressable>
-          </View>
+          <InputView
+            defaultValue=""
+            onSaveValue={addExpense}
+          />
         ) : (
           <View style={styles.numbers}>
             <Text style={{

@@ -1,8 +1,14 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Button } from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Button, Pressable } from "react-native";
 import { useState } from "react";
 
 import type { ReactElement } from "react";
 import type { Group } from "@/app";
+
+import InputView from "./InputView";
+
+import containers from "@/styles/containers";
+import assets from "@/styles/assets";
+import texts from "@/styles/texts";
 
 export type UserProps = {
   name: string,
@@ -16,7 +22,6 @@ export type UserProps = {
 export default function User({name, avatar, groups, onChangeName, onRemoveGroup, onRemoveGroups} : UserProps) {
 
   const [ areSettingsShown, setAreSettingsShown ] = useState(false);
-  const [ nameInput, setNameInput ] = useState(name);
   const [ groupTargeted, setGroupTargeted ] = useState({ id: "", name: ""});
   const [ isConfirmationShown, setIsConfirmationShown ] = useState(false);
 
@@ -26,10 +31,9 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
       setGroupTargeted({ id: "", name: ""});
     }
     setAreSettingsShown(!areSettingsShown);
-    setNameInput(name);
   };
 
-  const changeName = () => {
+  const changeName = (nameInput:string) => {
     onChangeName(nameInput);
   };
 
@@ -48,13 +52,11 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.upper}>
-        <View style={styles.user}>
+    <View style={containers.header}>
+      <View style={containers.profile}>
+        <View style={containers.profileInfo}>
           {avatar}
-          <Text
-           style={styles.username}
-          >
+          <Text style={texts.username}>
             {name}
           </Text>
         </View>
@@ -62,7 +64,7 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
           onPress={toggleSettings}
         >
           <Image
-            style={styles.settingsIcon}
+            style={assets.icon}
             source={require("@/assets/images/settings.png")}
           />
         </TouchableOpacity>
@@ -72,32 +74,9 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
           <View style={styles.settingsContainer}>
             <View style={styles.settingsItem}>
               <Text style={styles.settingsItemTitle}>Change name:</Text>
-              <TextInput
-                style={{
-                  textDecorationLine: "underline",
-                  fontSize: 18,
-                  backgroundColor: "#EBEBE4",
-                  textAlign: "center",
-                  borderRadius: 10,
-                  paddingHorizontal: 10,
-                  marginRight: "auto"
-                }}
-                value={nameInput}
-                onChangeText={setNameInput}
-                placeholder="type in name"
-                maxLength={15}
-              />
-              <Button
-                title="save"
-                onPress={changeName}
-                disabled={!nameInput ? true : false}
-              />
-            </View>
-            <View style={styles.settingsItem}>
-              <Text style={styles.settingsItemTitle}>Change avatar (not implemented)</Text>
-              <Button
-                title="file"
-                disabled
+              <InputView
+                defaultValue={name}
+                onSaveValue={changeName}
               />
             </View>
             <View style={styles.settingsItem}>
@@ -168,44 +147,21 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
 }
 
 const styles = StyleSheet.create({
-  container: {
-    borderTopWidth: .5,
-    marginTop: 5,
-    paddingTop: 10,
-  },
-  upper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  user: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  username: {
-    fontSize: 30,
-    textAlignVertical: 'bottom',
-    fontWeight: '400',
-    lineHeight: 35,
-  },
-  settingsIcon: {
-    width: 35,
-    height: 35,
-  },
   settingsContainer: {
     gap: 14,
     marginTop: 10,
     borderWidth: .5,
     borderRadius: 10,
-    paddingVertical: 9,
     paddingHorizontal: 9,
+    paddingVertical: 14
   },
   settingsItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     gap: 5,
   },
   settingsItemTitle: {
-    fontSize: 17,
+    fontSize: 21,
+    paddingTop: 3
   },
 })
