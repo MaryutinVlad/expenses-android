@@ -133,7 +133,7 @@ export default function ContentView({
           onPress={toggleSaveLoadPopup}
         />
       </View>
-      <View>
+      <View style={containers.stdList}>
         {
           isAddingGroup && (
             <View style={containers.popup}>
@@ -199,7 +199,7 @@ export default function ContentView({
         }
         <View style={{
           ...containers.rowApart,
-          marginTop: 10,
+          ...containers.vertIndent,
         }}>
           <Text style={fonts.titleOnButton}>
             Filter by:

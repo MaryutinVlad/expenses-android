@@ -4,6 +4,9 @@ import GroupView from "./GroupView";
 import { Group, ExpensesEntry } from "@/app";
 import showExpenses from "../helpers/showExpenses";
 
+import containers from "@/styles/containers";
+import fonts from "@/styles/fonts";
+
 type Props = {
   groups: Group[],
   expenses: ExpensesEntry[],
@@ -35,36 +38,33 @@ export default function GroupsView({
   expensesSummary.map(group => group.earnings ? profitsTotal += group.groupValue : expensesTotal += group.groupValue);
 
   return (
-    <View style={styles.container}>
+    <View style={containers.stdList}>
       <View style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        paddingHorizontal: 10,
-        borderWidth: .5,
-        borderRadius: 7,
+        ...containers.popup,
+        ...containers.rowApart
       }}>
-        <Text style={styles.totalsText}>
+        <Text style={fonts.bigHeader}>
           Total:
         </Text>
-        <View style={{flexDirection: "row", gap: 3}}>
+        <View style={containers.rowTogether}>
           <Text style={{
-            ...styles.totalsText,
+            ...fonts.bigHeader,
             color: "green"
           }}>
             pr:
           </Text>
-          <Text style={styles.totalsText}>
+          <Text style={fonts.bigHeader}>
             {profitsTotal}
           </Text>
         </View>
-        <View style={{flexDirection: "row", gap: 3}}>
+        <View style={containers.rowTogether}>
           <Text style={{
-            ...styles.totalsText,
+            ...fonts.bigHeader,
             color: "red"
           }}>
             ex:
           </Text>
-          <Text style={styles.totalsText}>
+          <Text style={fonts.bigHeader}>
             {expensesTotal}
           </Text>
         </View>
@@ -83,23 +83,26 @@ export default function GroupsView({
           />
         ))
       }
-      <View style={styles.history}>
-        <Text style={{ fontSize: 22 }}>
+      <View style={containers.vertIndent}>
+        <Text style={fonts.bigHeader}>
           History
         </Text>
         {
           expensesHistory.map(({ id, expenseGroup, expenseValue, createdOn }) => (
             <View
               key={id}
-              style={styles.historyUnit}
+              style={{
+                ...containers.rowTogether,
+                ...containers.horizIndent,
+              }}
             >
-              <Text style={styles.historyText}>
+              <Text style={fonts.stdHeader}>
                 {expenseValue} in
               </Text>
-              <Text style={{color: `${groupColors[expenseGroup]}`, ...styles.historyText}}>
+              <Text style={{color: `${groupColors[expenseGroup]}`, ...fonts.stdHeader}}>
                 {expenseGroup}
               </Text>
-              <Text style={styles.historyText}>
+              <Text style={fonts.stdHeader}>
                 on {createdOn}
               </Text>
             </View>
@@ -111,14 +114,6 @@ export default function GroupsView({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 10,
-    flexDirection: "column",
-    gap: 8,
-  },
-  history: {
-    marginVertical: 10,
-  },
   historyUnit: {
     flexDirection: 'row',
     gap: 10,
@@ -127,7 +122,4 @@ const styles = StyleSheet.create({
   historyText: {
     fontSize: 18,
   },
-  totalsText: {
-    fontSize: 23,
-  }
 })

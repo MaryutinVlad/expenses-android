@@ -25,7 +25,7 @@ export default function InputView({
       <TextInput
         value={inputValue}
         onChangeText={setInputValue}
-        placeholder="type in name"
+        placeholder="type in value"
         maxLength={12}
         style={forms.textInput}
       />

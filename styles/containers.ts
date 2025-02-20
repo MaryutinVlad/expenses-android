@@ -12,7 +12,7 @@ const containers = StyleSheet.create({
     paddingTop: 15,
   },
   stdList: {
-    gap: 5,
+    gap: 6,
   },
   rowApart: {
     flexDirection: 'row',
@@ -53,7 +53,13 @@ const containers = StyleSheet.create({
     height: 40,
     borderWidth: .5,
     borderRadius: 3,
-  }
+  },
+  vertIndent: {
+    marginVertical: 5,
+  },
+  horizIndent: {
+    marginHorizontal: 10,
+  },
 });
 
 export default containers;

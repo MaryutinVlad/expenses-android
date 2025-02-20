@@ -1,8 +1,11 @@
-import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 
 import InputView from "./InputView";
+
+import containers from "@/styles/containers";
+import fonts from "@/styles/fonts";
 
 import shortenValue from "../helpers/shortenValue";
 
@@ -89,11 +92,8 @@ export default function GroupView({
             onSaveValue={addExpense}
           />
         ) : (
-          <View style={styles.numbers}>
-            <Text style={{
-              textAlign: "right",
-              ...styles.text
-              }}>
+          <View style={containers.rowApart}>
+            <Text style={fonts.bigHeader}>
                 {groupValue >= 1000000 ? shortenValue(groupValue) : groupValue}
             </Text>
           </View>
@@ -116,25 +116,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     alignItems: "center",
-  },
-  text: {
-    fontSize: 23,
-    verticalAlign: "middle"
-  },
-  numbers: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  add: {
-    flexDirection: "column",
-    justifyContent: "space-around",
-    backgroundColor: "#e5eaf3",
-    borderRadius: 7,
-    alignItems: "center",
-    width: "35%",
-  },
-  textInput: {
-    textDecorationLine: "underline",
-    fontSize: 17,
   },
 })

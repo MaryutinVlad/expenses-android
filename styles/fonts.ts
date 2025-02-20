@@ -6,11 +6,14 @@ const fonts = StyleSheet.create({
   },
   titleOnButton: {
     fontSize: 22,
-    paddingTop: 3
+    paddingTop: 3,
   },
   stdHeader: {
     fontSize: 20,
-  }
+  },
+  bigHeader: {
+    fontSize: 23,
+  },
 });
 
 export default fonts;
