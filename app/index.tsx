@@ -13,6 +13,8 @@ export type Group = {
   groupName: string,
   groupColor: string,
   earnings: boolean,
+  altName: string,
+  altColor: string,
 };
 
 export type Expense = {
@@ -99,6 +101,8 @@ export default function HomeScreen() {
       groupName,
       groupColor: pickedColor,
       createdOn: date.toLocaleDateString(),
+      altName: "",
+      altColor: "",
       earnings: false,
     };
 

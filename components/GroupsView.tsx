@@ -1,8 +1,10 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 
 import GroupView from "./GroupView";
 import { Group, ExpensesEntry } from "@/app";
+
 import showExpenses from "../helpers/showExpenses";
+import shortenValue from "@/helpers/shortenValue";
 
 import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
@@ -15,9 +17,13 @@ type Props = {
   onAddExpense( groupName: string, groupValue: number): void,
 };
 
-type GroupColors = {
-  [key: string]: string,
-}
+type GroupProps = {
+  [key: string]: {
+    color: string,
+    altName: string,
+    altColor: string,
+  }
+};
 
 export default function GroupsView({
  groups,
@@ -27,11 +33,18 @@ export default function GroupsView({
  onAddExpense,
 }: Props) {
 
-  const groupColors : GroupColors = {};
+  const groupProps : GroupProps = {};
 
-  groups.map(group => groupColors[group.groupName] = group.groupColor);
+  groups.map(group => {
+    groupProps[group.groupName] = {
+      color: group.groupColor,
+      altName: group.altName ? group.altName : "",
+      altColor: group.altColor ? group.altColor : ""
+    };
+  });
 
   const { expensesSummary, expensesHistory } = showExpenses(filter, expenses, groups, dateKey);
+
   let expensesTotal = 0;
   let profitsTotal = 0;
 
@@ -54,7 +67,7 @@ export default function GroupsView({
             pr:
           </Text>
           <Text style={fonts.bigHeader}>
-            {profitsTotal}
+            {profitsTotal >= 1000000 ? shortenValue(profitsTotal) : profitsTotal}
           </Text>
         </View>
         <View style={containers.rowTogether}>
@@ -65,7 +78,7 @@ export default function GroupsView({
             ex:
           </Text>
           <Text style={fonts.bigHeader}>
-            {expensesTotal}
+            {expensesTotal >= 1000000 ? shortenValue(expensesTotal) : expensesTotal}
           </Text>
         </View>
       </View>
@@ -75,8 +88,9 @@ export default function GroupsView({
           <GroupView
             key={id}
             groupName={groupName}
+            altName={groupProps[groupName].altName ? groupProps[groupName].altName : ""}
             groupValue={groupValue}
-            groupColor={groupColors[groupName]}
+            groupColor={groupProps[groupName].altColor ? groupProps[groupName].altColor : groupProps[groupName].color}
             expensesTotal={expensesTotal}
             onAddExpense={onAddExpense}
             earnings={earnings}
@@ -99,7 +113,7 @@ export default function GroupsView({
               <Text style={fonts.stdHeader}>
                 {expenseValue} in
               </Text>
-              <Text style={{color: `${groupColors[expenseGroup]}`, ...fonts.stdHeader}}>
+              <Text style={{color: `${groupProps[expenseGroup]}`, ...fonts.stdHeader}}>
                 {expenseGroup}
               </Text>
               <Text style={fonts.stdHeader}>
@@ -112,14 +126,3 @@ export default function GroupsView({
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  historyUnit: {
-    flexDirection: 'row',
-    gap: 10,
-    marginHorizontal: 10,
-  },
-  historyText: {
-    fontSize: 18,
-  },
-})

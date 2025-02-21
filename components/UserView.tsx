@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Button, Pressable } from "react-native";
+import { View, Text, Image, TouchableOpacity, Button } from "react-native";
 import { useState } from "react";
 
 import type { ReactElement } from "react";

@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, Button } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
 import { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -14,6 +15,7 @@ type Props = {
   groupValue: number,
   groupColor: string,
   earnings: boolean,
+  altName: string,
   expensesTotal: number,
   onAddExpense( groupName: string, groupValue: number ): void,
 }
@@ -23,6 +25,7 @@ export default function GroupView({
   groupValue,
   groupColor,
   earnings,
+  altName,
   expensesTotal,
   onAddExpense,
 }: Props) {
@@ -44,77 +47,53 @@ export default function GroupView({
   }
 
   return (
-    <LinearGradient
-      style={styles.container}
-      colors={[`${groupColor}25`, "transparent"]}
-      start={{ x: 0, y: 0}}
-      end={{ x: 1, y: 1}}
-      locations={[percentage, percentage]}
-      dither={false}
-    >
-      <View style={styles.subcontainer}>
+    <View style={{
+        ...containers.stdList,
+        paddingBottom: 5,
+        borderBottomWidth: .5
+    }}>
+      <LinearGradient
+        style={containers.gradient}
+        colors={[`${groupColor}25`, "transparent"]}
+        start={{ x: 0, y: 0}}
+        end={{ x: 1, y: 1}}
+        locations={[percentage, percentage]}
+        dither={false}
+      >
         <Pressable
           onPress={toggleAddExpense}
           style={{
-            borderColor: "#2196F3",
-            backgroundColor: `${isAddingExpense ? "#2196F3" : "transparent"}`,
-            borderWidth: 1.5,
-            borderRadius: 25,
-            width: 35,
-            height: 35,
+            ...containers.rowApart,
+            width: "100%",
+            gap: 10,
           }}
         >
-          <Text
-            style={{
-              color: `${isAddingExpense ? "#ffffff" : "#2196F3"}`,
-              fontSize: 30,
-              fontWeight: 100,
-              margin: "auto",
-              lineHeight: 35,
-              textAlign: "center",
-            }}
-          >
-            +
-          </Text>
-        </Pressable>
-        <Text style={{
-          color: `${groupColor}`,
-          fontSize: 24,
-          verticalAlign: "middle",
+          <Text style={{
+            color: `${groupColor}`,
+            fontSize: 24,
+            lineHeight: 40,
           }}>
-            {groupName} 
+            {altName ? altName : groupName}
           </Text>
-      </View>
-      {
-        isAddingExpense ? (
+          <Text style={fonts.bigHeader}>
+            {groupValue >= 1000000 ? shortenValue(groupValue) : groupValue}
+          </Text>          
+        </Pressable>
+      </LinearGradient>
+
+      {isAddingExpense && (
+        <View style={containers.rowApart}>
+          <Button
+            title="change properties"
+            disabled
+          />
           <InputView
             defaultValue=""
             onSaveValue={addExpense}
           />
-        ) : (
-          <View style={containers.rowApart}>
-            <Text style={fonts.bigHeader}>
-                {groupValue >= 1000000 ? shortenValue(groupValue) : groupValue}
-            </Text>
-          </View>
-        )
-      }
-    </LinearGradient>
+        </View>
+      )}
+
+    </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderRadius: 5,
-    minHeight: 40,
-    maxHeight: 100,
-  },
-  subcontainer: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-  },
-})

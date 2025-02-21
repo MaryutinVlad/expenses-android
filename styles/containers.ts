@@ -17,6 +17,7 @@ const containers = StyleSheet.create({
   rowApart: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: "center",
   },
   rowTogether: {
     flexDirection: 'row',
@@ -59,6 +60,12 @@ const containers = StyleSheet.create({
   },
   horizIndent: {
     marginHorizontal: 10,
+  },
+  gradient: {
+    justifyContent: "space-between",
+    borderRadius: 5,
+    height: 40,
+    paddingLeft: 8,
   },
 });
 

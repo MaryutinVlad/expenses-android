@@ -1,4 +1,5 @@
-import { View, Text, TextInput, Pressable } from "react-native";
+import { View, Text, TextInput } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
 import { useState } from "react";
 
 import containers from "@/styles/containers";
