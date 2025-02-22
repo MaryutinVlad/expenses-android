@@ -1,11 +1,29 @@
 import { View, Text, TextInput, Button } from "react-native";
 import { Pressable } from "react-native-gesture-handler";
+import { useState } from "react";
+
+import colors from "../helpers/colors.json";
 
 import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
 import forms from "@/styles/forms";
+import assets from "@/styles/assets";
 
-export default function GroupPropsView() {
+type Props = {
+  onSaveData: ( groupName: string, pickedColor: string) => void;
+};
+
+export default function GroupPropsView({ onSaveData }: Props) {
+
+  const [ groupName, setGroupName ] = useState("");
+  const [ pickedColor, setPickedColor ] = useState("#007AFF");
+
+  const saveData = () => {
+    onSaveData(groupName, pickedColor);
+    setGroupName("");
+    setPickedColor("#007AFF");
+  };
+
   return (
     <View style={containers.popup}>
       <View style={containers.rowApart}>
@@ -13,7 +31,7 @@ export default function GroupPropsView() {
           Group name:
         </Text>
         <TextInput
-          onChangeText={onChangeGroupName}
+          onChangeText={setGroupName}
           defaultValue={groupName}
           maxLength={15}
           placeholder="type in group name"
@@ -45,7 +63,8 @@ export default function GroupPropsView() {
         <Button
           title="save"
           color={pickedColor}
-          onPress={addGroup}
+          onPress={saveData}
+          disabled={groupName ? false : true}
         />
       </View>
     </View>

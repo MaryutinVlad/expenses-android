@@ -117,6 +117,7 @@ export default function HomeScreen() {
       expenses: user.expenses,
     };
 
+
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
     setUser(updatedUser);
   };

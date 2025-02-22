@@ -1,21 +1,18 @@
-import { View, Text, Button, TextInput } from "react-native";
+import { View, Text, Button } from "react-native";
 import { useState } from "react";
-import colors from "../helpers/colors.json";
 import * as FileSystem from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 
-import GroupsView from "@/components/GroupsView";
+import GroupsView from "./GroupsView";
+import GroupPropsView from "./GroupPropsView";
 
 import containers from "@/styles/containers";
-import forms from "@/styles/forms";
 import fonts from "@/styles/fonts";
-import assets from "@/styles/assets";
 
 import { Group, ExpensesEntry } from "@/app";
-import { Pressable } from "react-native-gesture-handler";
 
 type Props = {
-  onAddGroup(groupName: string, groupColor: string): void,
+  onAddGroup(groupName: string, pickedColor: string): void,
   onAddExpense(groupName: string, groupValue: number): void,
   onImportData(expenses: ExpensesEntry[], groups: Group[], relevantOn: string): void,
   groups: Group[],
@@ -34,8 +31,6 @@ export default function ContentView({
 
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
   const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
-  const [ pickedColor, setPickedColor ] = useState("#007AFF");
-  const [ groupName, onChangeGroupName ] = useState("");
   const [ filter, setFilter ] = useState(2);
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
@@ -43,8 +38,6 @@ export default function ContentView({
   const toggleGroupPopup = () => {
     setIsAddingGroup(!isAddingGroup);
     setSaveLoadOpen(false);
-    onChangeGroupName("");
-    setPickedColor("#007AFF");
   }
 
   const toggleSaveLoadPopup = () => {
@@ -52,11 +45,9 @@ export default function ContentView({
     setIsAddingGroup(false);
   }
 
-  const addGroup = () => {
+  const addGroup = (groupName: string, pickedColor: string) => {
     onAddGroup(groupName, pickedColor);
     setIsAddingGroup(false);
-    onChangeGroupName("");
-    setPickedColor("#007AFF")
   }
 
   const exportData = async () => {
@@ -136,48 +127,9 @@ export default function ContentView({
       <View style={containers.stdList}>
         {
           isAddingGroup && (
-            <View style={containers.popup}>
-              <View style={containers.rowApart}>
-                <Text style={fonts.stdHeader}>
-                  Group name:
-                </Text>
-                <TextInput
-                  onChangeText={onChangeGroupName}
-                  defaultValue={groupName}
-                  maxLength={15}
-                  placeholder="type in group name"
-                  style={forms.textInput}
-                />
-              </View>
-              <View>
-                <Text style={fonts.stdHeader}>
-                  Pick group color: &#x2193;
-                </Text>
-                <View style={containers.colorPalette}>
-                  {
-                    colors.map(color => (
-                      <Pressable
-                        key={color}
-                        onPress={() => setPickedColor(color)}
-                        style={containers.color}
-                      >
-                        <View
-                          style={{
-                            backgroundColor: color,
-                            ...assets.color
-                          }}
-                        />
-                      </Pressable>
-                    ))
-                  }
-                </View>
-                <Button
-                  title="save"
-                  color={pickedColor}
-                  onPress={addGroup}
-                />
-              </View>
-            </View>
+            <GroupPropsView
+              onSaveData={(groupName, pickedColor) => addGroup(groupName, pickedColor)}
+            />
           )
         }
         {
