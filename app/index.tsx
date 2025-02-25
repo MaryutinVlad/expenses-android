@@ -1,61 +1,20 @@
 import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import 'react-native-get-random-values';
+
 import { useState } from 'react';
-import 'react-native-get-random-values'
+
+import type { User, ExpensesEntry, Group} from "@/types/types";
+
 import { nanoid } from 'nanoid';
 
 import ParallaxScrollView from '@/components/Overlay';
 import ContentView from '@/components/ContentView';
 
-export type Group = {
-  id: string,
-  createdOn: string,
-  groupName: string,
-  groupColor: string,
-  earnings: boolean,
-  altName: string,
-  altColor: string,
-};
-
-export type Expense = {
-  id: string,
-  createdOn: string,
-  expenseGroup: string,
-  expenseValue: number,
-};
-
-export type ExpensesEntry = {
-  date: string,
-  entries: Expense[],
-};
-
-export type ArchivedItem = {
-  groupName: string,
-  groupValue: number,
-  earnings: boolean,
-};
-
-export type ArchiveEntry = {
-  date: string,
-  totals: ArchivedItem[],
-};
-
-type User = {
-  profile: {
-    name: string,
-    createdOn: string,
-    avatar: string,
-    groups: Group[],
-    lastUpdated: string,
-  },
-  expenses: ExpensesEntry[],
-  archive: ArchiveEntry[],
-};
-
 export default function HomeScreen() {
   
   const date = new Date();
-  const dateKey = String(date.getMonth() + 1) + "/" + String(date.getFullYear())
+  const dateKey = String(date.getMonth() + 1) + "/" + String(date.getFullYear());
   const newProfile: User = {
     profile: {
       name: "New User",
@@ -146,7 +105,7 @@ export default function HomeScreen() {
         ...user.profile,
         groups: [
           ...user.profile.groups,
-          groupValues
+          groupValues,
         ]
       },
     };
@@ -159,7 +118,8 @@ export default function HomeScreen() {
   const removeGroup = async (id: string, name: string) => {
 
     const updatedGroups = user.profile.groups.filter(group => id !== group.id);
-    const updatedExpenses: ExpensesEntry[] = []
+    const updatedExpenses: ExpensesEntry[] = [];
+
     user.expenses.forEach(month => {
       updatedExpenses.push({
         date: month.date,

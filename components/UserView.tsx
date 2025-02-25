@@ -2,7 +2,7 @@ import { View, Text, Image, TouchableOpacity, Button } from "react-native";
 import { useState } from "react";
 
 import type { ReactElement } from "react";
-import type { Group } from "@/app";
+import type { Group } from "@/types/types";
 
 import InputView from "./InputView";
 

@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactElement } from 'react';
-import type { Group } from '@/app';
+import type { Group } from '@/types/types';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme, View, Image } from 'react-native';

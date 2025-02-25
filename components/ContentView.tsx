@@ -9,7 +9,7 @@ import GroupPropsView from "./GroupPropsView";
 import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
 
-import { Group, ExpensesEntry } from "@/app";
+import { Group, ExpensesEntry } from "@/types/types";
 
 type Props = {
   onAddGroup(groupName: string, pickedColor: string): void,

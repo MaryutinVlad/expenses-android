@@ -1,10 +1,11 @@
 import { View, Text } from "react-native";
 
 import GroupView from "./GroupView";
-import { Group, ExpensesEntry } from "@/app";
+import { Group, ExpensesEntry } from "@/types/types";
 
 import showExpenses from "../helpers/showExpenses";
 import shortenValue from "@/helpers/shortenValue";
+import formateDate from "@/helpers/formateDate";
 
 import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
@@ -100,35 +101,67 @@ export default function GroupsView({
           />
         ))
       }
-      <View style={containers.vertIndent}>
-        <Text style={fonts.bigHeader}>
-          History
-        </Text>
+      <View style={{
+        ...containers.stdList,
+        ...containers.vertIndent,
+      }}>
         {
-          expensesHistory.map(({ id, expenseGroup, expenseValue, createdOn }) => (
-            <View
-              key={id}
-              style={{
-                ...containers.rowTogether,
-                ...containers.horizIndent,
-              }}
-            >
-              <Text style={fonts.stdHeader}>
-                {expenseValue} in
-              </Text>
-              <Text style={{
-                color: `${groupProps[expenseGroup].altColor
-                  ? groupProps[expenseGroup].altColor
-                  : groupProps[expenseGroup].color}`,
-                  ...fonts.stdHeader
-              }}>
-                {groupProps[expenseGroup].altName ? groupProps[expenseGroup].altName : expenseGroup}
-              </Text>
-              <Text style={fonts.stdHeader}>
-                on {createdOn}
-              </Text>
-            </View>
-          ))
+          expensesHistory.map(({ id, expenseGroup, expenseValue, createdOn }, index) => {
+            if (!index || expensesHistory[index].createdOn !== expensesHistory[index - 1].createdOn) {
+
+              const formatedDate = formateDate(createdOn);
+
+              return (
+                <View
+                  key={id}
+                  style={{
+                    ...containers.stdList,
+                    marginTop: 5,
+                  }}
+                >
+                  <Text
+                    style={{
+                      ...fonts.stdHeader,
+                      alignSelf: "center",
+                      borderBottomWidth: .5,
+                  }}>
+                    {formatedDate}
+                  </Text>
+                  <View style={containers.rowTogether}>
+                    <Text style={fonts.stdHeader}>
+                      {expenseValue} in
+                    </Text>
+                    <Text style={{
+                      color: `${groupProps[expenseGroup].altColor
+                        ? groupProps[expenseGroup].altColor
+                        : groupProps[expenseGroup].color}`,
+                        ...fonts.stdHeader
+                    }}>
+                      {groupProps[expenseGroup].altName ? groupProps[expenseGroup].altName : expenseGroup}
+                    </Text>
+                  </View>
+                </View>
+              )
+            } else {
+              return(
+                <View
+                  key={id}
+                  style={containers.rowTogether}
+                >
+                  <Text style={fonts.stdHeader}>
+                    {expenseValue} in
+                  </Text>
+                  <Text style={{
+                    color: `${groupProps[expenseGroup].altColor
+                      ? groupProps[expenseGroup].altColor
+                      : groupProps[expenseGroup].color}`,
+                      ...fonts.stdHeader
+                  }}>
+                    {groupProps[expenseGroup].altName ? groupProps[expenseGroup].altName : expenseGroup}
+                  </Text>
+                </View>
+            )}
+          })
         }
       </View>
     </View>
