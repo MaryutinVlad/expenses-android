@@ -15,6 +15,7 @@ type Props = {
   onAddGroup(groupName: string, pickedColor: string): void,
   onAddExpense(groupName: string, groupValue: number): void,
   onImportData(expenses: ExpensesEntry[], groups: Group[], relevantOn: string): void,
+  onChangeProps(altName: string, altColor: string, ogName: string): void,
   groups: Group[],
   expenses: ExpensesEntry[],
   dateKey: string,
@@ -25,6 +26,7 @@ export default function ContentView({
   groups,
   expenses,
   dateKey,
+  onChangeProps,
   onAddExpense,
   onImportData,
 }: Props) {
@@ -38,17 +40,17 @@ export default function ContentView({
   const toggleGroupPopup = () => {
     setIsAddingGroup(!isAddingGroup);
     setSaveLoadOpen(false);
-  }
+  };
 
   const toggleSaveLoadPopup = () => {
     setSaveLoadOpen(!isSaveLoadOpen);
     setIsAddingGroup(false);
-  }
+  };
 
   const addGroup = (groupName: string, pickedColor: string) => {
     onAddGroup(groupName, pickedColor);
     setIsAddingGroup(false);
-  }
+  };
 
   const exportData = async () => {
     
@@ -92,7 +94,7 @@ export default function ContentView({
     } else {
       return;
     }
-  }
+  };
 
   const importData = async () => {
     await DocumentPicker.getDocumentAsync()
@@ -122,6 +124,7 @@ export default function ContentView({
         <Button
           title='Save/Load'
           onPress={toggleSaveLoadPopup}
+          color={isSaveLoadOpen ? "#63b5f6" : "#2196F3"}
         />
       </View>
       <View style={containers.stdList}>
@@ -129,6 +132,8 @@ export default function ContentView({
           isAddingGroup && (
             <GroupPropsView
               onSaveData={(groupName, pickedColor) => addGroup(groupName, pickedColor)}
+              defaultName=""
+              defaultColor="#016180"
             />
           )
         }
@@ -179,6 +184,7 @@ export default function ContentView({
           expenses={expenses}
           filter={filter}
           dateKey={dateKey}
+          onChangeProps={onChangeProps}
           onAddExpense={onAddExpense}
         />
       </View>

@@ -27,7 +27,7 @@ export default function InputView({
         value={inputValue}
         onChangeText={setInputValue}
         placeholder="type in value"
-        maxLength={12}
+        maxLength={15}
         style={forms.textInput}
       />
       <Pressable

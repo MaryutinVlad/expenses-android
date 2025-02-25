@@ -14,6 +14,7 @@ type Props = {
   expenses: ExpensesEntry[],
   filter: number,
   dateKey: string,
+  onChangeProps(altName: string, altColor: string, ogName: string): void,
   onAddExpense( groupName: string, groupValue: number): void,
 };
 
@@ -30,6 +31,7 @@ export default function GroupsView({
  expenses,
  filter,
  dateKey,
+ onChangeProps,
  onAddExpense,
 }: Props) {
 
@@ -92,6 +94,7 @@ export default function GroupsView({
             groupValue={groupValue}
             groupColor={groupProps[groupName].altColor ? groupProps[groupName].altColor : groupProps[groupName].color}
             expensesTotal={expensesTotal}
+            onChangeProps={onChangeProps}
             onAddExpense={onAddExpense}
             earnings={earnings}
           />
@@ -113,8 +116,13 @@ export default function GroupsView({
               <Text style={fonts.stdHeader}>
                 {expenseValue} in
               </Text>
-              <Text style={{color: `${groupProps[expenseGroup]}`, ...fonts.stdHeader}}>
-                {expenseGroup}
+              <Text style={{
+                color: `${groupProps[expenseGroup].altColor
+                  ? groupProps[expenseGroup].altColor
+                  : groupProps[expenseGroup].color}`,
+                  ...fonts.stdHeader
+              }}>
+                {groupProps[expenseGroup].altName ? groupProps[expenseGroup].altName : expenseGroup}
               </Text>
               <Text style={fonts.stdHeader}>
                 on {createdOn}

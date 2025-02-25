@@ -10,18 +10,24 @@ import forms from "@/styles/forms";
 import assets from "@/styles/assets";
 
 type Props = {
-  onSaveData: ( groupName: string, pickedColor: string) => void;
+  onSaveData: ( groupName: string, pickedColor: string) => void,
+  defaultName: string,
+  defaultColor: string,
 };
 
-export default function GroupPropsView({ onSaveData }: Props) {
+export default function GroupPropsView({
+  onSaveData,
+  defaultName,
+  defaultColor,
+}: Props) {
 
-  const [ groupName, setGroupName ] = useState("");
-  const [ pickedColor, setPickedColor ] = useState("#007AFF");
+  const [ groupName, setGroupName ] = useState(defaultName);
+  const [ pickedColor, setPickedColor ] = useState(defaultColor);
 
   const saveData = () => {
     onSaveData(groupName, pickedColor);
     setGroupName("");
-    setPickedColor("#007AFF");
+    setPickedColor(defaultColor);
   };
 
   return (
@@ -32,10 +38,14 @@ export default function GroupPropsView({ onSaveData }: Props) {
         </Text>
         <TextInput
           onChangeText={setGroupName}
-          defaultValue={groupName}
+          defaultValue={defaultName}
           maxLength={15}
+          autoCorrect={false}
           placeholder="type in group name"
-          style={forms.textInput}
+          style={{
+            ...forms.textInput,
+            color: pickedColor,
+          }}
         />
       </View>
       <View>
@@ -53,7 +63,8 @@ export default function GroupPropsView({ onSaveData }: Props) {
                 <View
                   style={{
                     backgroundColor: color,
-                    ...assets.color
+                    boxShadow: `${ pickedColor === color ? "0 0 0 3px #413e3e" : "none"}`,
+                    ...assets.color,
                   }}
                 />
               </Pressable>

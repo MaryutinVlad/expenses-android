@@ -29,6 +29,17 @@ export type ExpensesEntry = {
   entries: Expense[],
 };
 
+export type ArchivedItem = {
+  groupName: string,
+  groupValue: number,
+  earnings: boolean,
+};
+
+export type ArchiveEntry = {
+  date: string,
+  totals: ArchivedItem[],
+};
+
 type User = {
   profile: {
     name: string,
@@ -38,6 +49,7 @@ type User = {
     lastUpdated: string,
   },
   expenses: ExpensesEntry[],
+  archive: ArchiveEntry[],
 };
 
 export default function HomeScreen() {
@@ -57,7 +69,8 @@ export default function HomeScreen() {
         date: dateKey,
         entries: [],
       }
-    ]
+    ],
+    archive: [],
   }
 
   const [ user, setUser ] = useState(newProfile)
@@ -80,19 +93,40 @@ export default function HomeScreen() {
   }
 
   const changeName = async (nameInput: string) => {
-    console.log(nameInput)
 
     const updatedUser: User = {
+      ...user,
       profile: {
         ...user.profile,
         name: nameInput,
       },
-      expenses: user.expenses,
     };
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
     setUser(updatedUser);
-  }
+  };
+
+  const changeProps = async (altName: string, altColor: string, ogName: string) => {
+    const updatedGroups = user.profile.groups.map(group => {
+      if (group.groupName === ogName) {
+        group.altName = altName;
+        group.altColor = altColor;
+      }
+
+      return group;
+    });
+
+    const updatedUser: User = {
+      ...user,
+      profile: {
+        ...user.profile,
+        groups: updatedGroups,
+      },
+    };
+
+    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
 
   const addGroup = async (groupName: string, pickedColor: string) => {
 
@@ -107,6 +141,7 @@ export default function HomeScreen() {
     };
 
     const updatedUser: User = {
+      ...user,
       profile: {
         ...user.profile,
         groups: [
@@ -114,7 +149,6 @@ export default function HomeScreen() {
           groupValues
         ]
       },
-      expenses: user.expenses,
     };
 
 
@@ -139,6 +173,7 @@ export default function HomeScreen() {
         groups: updatedGroups,
       },
       expenses: updatedExpenses,
+      archive: user.archive,
     };
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
@@ -157,6 +192,7 @@ export default function HomeScreen() {
           entries: [],
         }
       ],
+      archive: [],
     };
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
@@ -168,6 +204,7 @@ export default function HomeScreen() {
     const updatedUser: User = {
       profile: user.profile,
       expenses: [],
+      archive: user.archive,
     }
     
     const expenseValues = {
@@ -206,13 +243,22 @@ export default function HomeScreen() {
     const mergingGroups: { [key: string]: Group } = {};
     const result: Group[] = [];
     
-    initialGroups.map(initialGroup => mergingGroups[initialGroup.groupName] =  initialGroup);
+    initialGroups.map(initialGroup => mergingGroups[initialGroup.groupName] =  {
+      ...initialGroup,
+      altColor: initialGroup.altColor ? initialGroup.altColor : "",
+      altName: initialGroup.altName ? initialGroup.altName : "",
+    });
     importedGroups.map(importedGroup => {
       importedGroup.earnings = false;
       if (importedGroup.groupName === "Заработала ") {
         importedGroup.earnings = true;
       }
-      mergingGroups[importedGroup.groupName] = importedGroup
+
+      mergingGroups[importedGroup.groupName] = {
+        ...importedGroup,
+        altName: mergingGroups[importedGroup.groupName].altName,
+        altColor: mergingGroups[importedGroup.groupName].altColor,
+      }
     });
 
     for (let group in mergingGroups) {
@@ -329,6 +375,7 @@ export default function HomeScreen() {
         lastUpdated: relevantOn
       },
       expenses: updatedExpenses,
+      archive: user.archive,
     };
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
@@ -348,12 +395,16 @@ export default function HomeScreen() {
       headerImage={
         <Image
           source={require('@/assets/images/logo.jpg')}
-          style={{margin: "auto"}}
+          style={{
+            margin: "auto",
+            marginTop: 10,
+          }}
         />
       }>
       <ContentView
         onAddGroup={addGroup}
         onAddExpense={addExpense}
+        onChangeProps={changeProps}
         groups={user.profile.groups}
         expenses={user.expenses}
         dateKey={dateKey}

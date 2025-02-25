@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 
 import InputView from "./InputView";
+import GroupPropsView from "./GroupPropsView";
 
 import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
@@ -17,6 +18,7 @@ type Props = {
   earnings: boolean,
   altName: string,
   expensesTotal: number,
+  onChangeProps( altName: string, altColor: string, ogName: string ): void,
   onAddExpense( groupName: string, groupValue: number ): void,
 }
 
@@ -26,25 +28,35 @@ export default function GroupView({
   groupColor,
   earnings,
   altName,
+  onChangeProps,
   expensesTotal,
   onAddExpense,
 }: Props) {
 
-  const [ isAddingExpense, setIsAddingExpense ] = useState(false);
+  const [ groupMenu, toggleGroupMenu ] = useState(false);
+  const [ groupProps, toggleGroupProps ] = useState(false);
+
   const percentage = groupValue === 0 ? 0 : (groupValue / expensesTotal);
 
   const toggleAddExpense = () => {
-    setIsAddingExpense(!isAddingExpense);
-  }
+    toggleGroupMenu(!groupMenu);
+  };
+
+  const changeProps = (altName: string, altColor: string) => {
+    onChangeProps(altName, altColor, groupName)
+    toggleGroupProps(false);
+    toggleGroupMenu(false);
+  };
 
   const addExpense = (valueInput: string) => {
     if (!Number(valueInput)) {
       console.log("invalid input");
-      return
+      return;
     }
-    setIsAddingExpense(false);
+    toggleGroupMenu(false);
+    toggleGroupProps(false);
     onAddExpense(groupName, Number(valueInput));
-  }
+  };
 
   return (
     <View style={{
@@ -81,16 +93,28 @@ export default function GroupView({
         </Pressable>
       </LinearGradient>
 
-      {isAddingExpense && (
-        <View style={containers.rowApart}>
-          <Button
-            title="change properties"
-            disabled
-          />
-          <InputView
-            defaultValue=""
-            onSaveValue={addExpense}
-          />
+      {groupMenu && (
+        <View style={containers.stdList}>
+          <View style={containers.rowApart}>
+            <Button
+              title="change properties"
+              onPress={() => toggleGroupProps(!groupProps)}
+              color={groupProps ? "#63b5f6" : "#2196F3"}
+            />
+            <InputView
+              defaultValue=""
+              onSaveValue={addExpense}
+            />
+          </View>
+          {
+            groupProps && (
+              <GroupPropsView
+                onSaveData={changeProps}
+                defaultName={altName ? altName : groupName}
+                defaultColor={groupColor}
+              />
+            )
+          }
         </View>
       )}
 
