@@ -15,6 +15,7 @@ type Props = {
   expenses: ExpensesEntry[],
   filter: number,
   dateKey: string,
+  editable: boolean,
   onChangeProps(altName: string, altColor: string, ogName: string): void,
   onAddExpense( groupName: string, groupValue: number): void,
 };
@@ -34,6 +35,7 @@ export default function GroupsView({
  dateKey,
  onChangeProps,
  onAddExpense,
+ editable,
 }: Props) {
 
   const groupProps : GroupProps = {};
@@ -98,6 +100,7 @@ export default function GroupsView({
             onChangeProps={onChangeProps}
             onAddExpense={onAddExpense}
             earnings={earnings}
+            editable={editable}
           />
         ))
       }

@@ -18,6 +18,7 @@ type Props = {
   earnings: boolean,
   altName: string,
   expensesTotal: number,
+  editable: boolean,
   onChangeProps( altName: string, altColor: string, ogName: string ): void,
   onAddExpense( groupName: string, groupValue: number ): void,
 }
@@ -31,6 +32,7 @@ export default function GroupView({
   onChangeProps,
   expensesTotal,
   onAddExpense,
+  editable,
 }: Props) {
 
   const [ groupMenu, toggleGroupMenu ] = useState(false);
@@ -38,9 +40,7 @@ export default function GroupView({
 
   const percentage = groupValue === 0 ? 0 : (groupValue / expensesTotal);
 
-  const toggleAddExpense = () => {
-    toggleGroupMenu(!groupMenu);
-  };
+  const toggleAddExpense = () => editable && toggleGroupMenu(!groupMenu);
 
   const changeProps = (altName: string, altColor: string) => {
     onChangeProps(altName, altColor, groupName)

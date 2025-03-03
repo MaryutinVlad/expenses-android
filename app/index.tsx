@@ -18,7 +18,7 @@ export default function HomeScreen() {
   const newProfile: User = {
     profile: {
       name: "New User",
-      createdOn: date.toLocaleDateString(),
+      createdOn: date.toLocaleDateString("en-US"),
       avatar: '',
       groups: [],
       lastUpdated: "2/11/2024",
@@ -93,7 +93,7 @@ export default function HomeScreen() {
       id: nanoid(),
       groupName,
       groupColor: pickedColor,
-      createdOn: date.toLocaleDateString(),
+      createdOn: date.toLocaleDateString("en-US"),
       altName: "",
       altColor: "",
       earnings: false,
@@ -171,7 +171,7 @@ export default function HomeScreen() {
       id: nanoid(),
       expenseGroup: groupName,
       expenseValue: groupValue,
-      createdOn: date.toLocaleDateString(),
+      createdOn: date.toLocaleDateString("en-US"),
     };
 
     if (user.expenses[user.expenses.length - 1].date === dateKey) {

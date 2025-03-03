@@ -1,10 +1,11 @@
-import { View, Text, Button } from "react-native";
+import { View, Text, Button, Image } from "react-native";
 import { useState } from "react";
 import * as FileSystem from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 
 import GroupsView from "./GroupsView";
 import GroupPropsView from "./GroupPropsView";
+import SwitchView from "./SwitchView";
 
 import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
@@ -31,8 +32,18 @@ export default function ContentView({
   onImportData,
 }: Props) {
 
+  const curIndex = () => {
+     let result = expenses.findIndex(month => month.date === dateKey);
+     if (result === -1) {
+      result = expenses.length - 1;
+     }
+
+     return result;
+  };
+
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
   const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
+  const [ monthIndex, setMonthIndex ] = useState(() => curIndex());
   const [ filter, setFilter ] = useState(2);
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
@@ -63,7 +74,7 @@ export default function ContentView({
       const fileContent = {
         expenses,
         groups,
-        relevantOn: date.toLocaleDateString()
+        relevantOn: date.toLocaleDateString("en-US")
       };
       let fileUri = "";
 
@@ -111,11 +122,18 @@ export default function ContentView({
         }
       })
       .catch(err => console.log("error while getting document:" + " " + err));
-  }
+  };
+
+  const switchMonth = (next: boolean) => setMonthIndex(prev => next ? prev += 1 : prev -= 1);
 
   return (
     <View style={containers.stdList}>
       <View style={containers.rowApart}>
+        <SwitchView
+          onSwitchMonth={() => switchMonth(false)}
+          reversed={true}
+          disabled={monthIndex === 0 ? true : false}
+        />
         <Button
           title='Add group'
           onPress={toggleGroupPopup}
@@ -125,6 +143,11 @@ export default function ContentView({
           title='Save/Load'
           onPress={toggleSaveLoadPopup}
           color={isSaveLoadOpen ? "#63b5f6" : "#2196F3"}
+        />
+        <SwitchView
+          onSwitchMonth={() => switchMonth(true)}
+          reversed={false}
+          disabled={monthIndex === expenses.length - 1 ? true : false}
         />
       </View>
       <View style={containers.stdList}>
@@ -164,12 +187,12 @@ export default function ContentView({
           <View style={containers.rowTogether}>
             <Button
               title="day"
-              disabled={filter === 0 ? true : false}
+              disabled//={filter === 0 ? true : false}
               onPress={() => setFilter(0)}
             />
             <Button
               title="week"
-              disabled={filter === 1 ? true : false}
+              disabled//={filter === 1 ? true : false}
               onPress={() => setFilter(1)}
             />
             <Button
@@ -183,9 +206,10 @@ export default function ContentView({
           groups={groups}
           expenses={expenses}
           filter={filter}
-          dateKey={dateKey}
+          dateKey={expenses[monthIndex].date}
           onChangeProps={onChangeProps}
           onAddExpense={onAddExpense}
+          editable={dateKey === expenses[monthIndex].date ? true : false}
         />
       </View>
     </View>

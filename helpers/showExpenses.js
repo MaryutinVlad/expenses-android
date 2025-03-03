@@ -1,12 +1,13 @@
 export default function showExpenses(filter, expenses, groups, dateKey) {
 
+  const curMonthIndex = expenses.findIndex(month => month.date === dateKey);
   const expensesSummary = []
   const expensesHistory = []
-  const currentMonthExpenses = expenses[expenses.length - 1]
+  const currentMonthExpenses = expenses[curMonthIndex];
   const subResult = {}
   let group
 
-  if (currentMonthExpenses.date !== dateKey) {
+  /*if (currentMonthExpenses.date !== dateKey) {
     for (group of groups) {
       expensesSummary.push({
         id: group.id,
@@ -18,7 +19,7 @@ export default function showExpenses(filter, expenses, groups, dateKey) {
 
     return { expensesSummary, expensesHistory }
 
-  } else if (filter === 2) {
+  } else*/ if (filter === 2) {
 
     for (let expenseIndex = currentMonthExpenses.entries.length - 1; expenseIndex >= 0; expenseIndex--) {
       const currentExpense = currentMonthExpenses.entries[expenseIndex]
@@ -37,7 +38,7 @@ export default function showExpenses(filter, expenses, groups, dateKey) {
     const daysToMonday = date.getDay()
     const dayInMilliseconds = 86400000
     const finalDate = new Date(Date.now() - (dayInMilliseconds * daysToMonday))
-    const finalKey = finalDate.toLocaleDateString()
+    const finalKey = finalDate.toLocaleDateString("en-US")
     let monthIndex = expenses.length - 1
     let expenseIndex = expenses[monthIndex].entries.length - 1
 
@@ -65,7 +66,7 @@ export default function showExpenses(filter, expenses, groups, dateKey) {
     for (let expenseIndex = currentMonthExpenses.entries.length - 1; expenseIndex >= 0; expenseIndex--) {
       const currentExpense = currentMonthExpenses.entries[expenseIndex]
 
-      if (currentExpense.createdOn === today.toLocaleDateString()) {
+      if (currentExpense.createdOn === today.toLocaleDateString("en-US")) {
         if (!subResult[currentExpense.expenseGroup]) {
           subResult[currentExpense.expenseGroup] = currentExpense.expenseValue
         } else {
