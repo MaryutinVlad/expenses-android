@@ -6,6 +6,8 @@ import type { Group } from "@/types/types";
 
 import InputView from "./InputView";
 
+import { formateShortDate } from "@/helpers/formateDate";
+
 import containers from "@/styles/containers";
 import assets from "@/styles/assets";
 import fonts from "@/styles/fonts";
@@ -14,16 +16,26 @@ export type UserProps = {
   name: string,
   avatar: ReactElement,
   groups: Group[],
+  monthSelected: string,
   onChangeName(nameInput: string): void,
   onRemoveGroup(id: string, name: string): void,
   onRemoveGroups(): void,
 }
 
-export default function User({name, avatar, groups, onChangeName, onRemoveGroup, onRemoveGroups} : UserProps) {
+export default function User({
+  name,
+  avatar,
+  groups,
+  monthSelected,
+  onChangeName,
+  onRemoveGroup,
+  onRemoveGroups
+} : UserProps) {
 
   const [ areSettingsShown, setAreSettingsShown ] = useState(false);
   const [ groupTargeted, setGroupTargeted ] = useState({ id: "", name: ""});
   const [ isConfirmationShown, setIsConfirmationShown ] = useState(false);
+  const formatedDate = formateShortDate(monthSelected);
 
   const toggleSettings = () => {
     if (!areSettingsShown) {
@@ -54,12 +66,10 @@ export default function User({name, avatar, groups, onChangeName, onRemoveGroup,
   return (
     <View style={containers.header}>
       <View style={containers.rowApart}>
-        <View style={containers.rowTogether}>
-          {avatar}
-          <Text style={fonts.username}>
-            {name}
-          </Text>
-        </View>
+        {avatar}
+        <Text style={fonts.username}>
+          {formatedDate}
+        </Text>
         <TouchableOpacity
           onPress={toggleSettings}
         >

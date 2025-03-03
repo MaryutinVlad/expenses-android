@@ -6,8 +6,7 @@ const containers = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   header: {
-    borderTopWidth: .5,
-    marginVertical: 15,
+    marginVertical: 20,
     paddingTop: 15,
   },
   stdList: {

@@ -2,7 +2,7 @@ import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-get-random-values';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import type { User, ExpensesEntry, Group} from "@/types/types";
 
@@ -30,26 +30,39 @@ export default function HomeScreen() {
       }
     ],
     archive: [],
-  }
+  };
 
-  const [ user, setUser ] = useState(newProfile)
+  const [ user, setUser ] = useState(newProfile);
+  const [ monthIndex, setMonthIndex ] = useState(0);
 
   const findProfile = async () => {
     try {
       const profile = await AsyncStorage.getItem('expenses-app');
+
       if (profile !== null) {
+
         const user = JSON.parse(profile)
-          if (!user.profile.lastUpdated) {
-            user.profile.lastUpdated = "2/11/2024";
-          }
-        setUser(user)
+
+        if (!user.profile.lastUpdated) {
+          user.profile.lastUpdated = "2/11/2024";
+        }
+
+        if (user.expenses[user.expenses.length - 1].date !== dateKey) {
+          user.expenses.push({
+            date: dateKey,
+            entries: [],
+          });
+        }
+
+        setMonthIndex(user.expenses.length - 1);
+        setUser(user);
       } else {
         await AsyncStorage.setItem('expenses-app', JSON.stringify(newProfile))
       }
     } catch(error) {
       console.log(error)
     }
-  }
+  };
 
   const changeName = async (nameInput: string) => {
 
@@ -157,7 +170,9 @@ export default function HomeScreen() {
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
     setUser(updatedUser);
-  }
+  };
+
+  const switchMonth = (next: boolean) => setMonthIndex(prev => next ? prev += 1 : prev -= 1);
 
   const addExpense = async (groupName: string, groupValue: number) => {
 
@@ -343,24 +358,26 @@ export default function HomeScreen() {
     setUser(updatedUser);
   };
 
-  findProfile();
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        await findProfile();
+      } catch(err) {
+        console.log("error in findProfile effect:" + " " + err);
+      }
+    }
+    fetchData();
+  }, []);
 
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#FFFFFF', dark: '#FFFFFF' }}
       user={user.profile}
+      monthSelected={user.expenses[monthIndex].date}
       onChangeName={changeName}
       onRemoveGroup={removeGroup}
       onRemoveGroups={removeGroups}
-      headerImage={
-        <Image
-          source={require('@/assets/images/logo.jpg')}
-          style={{
-            margin: "auto",
-            marginTop: 10,
-          }}
-        />
-      }>
+      >
       <ContentView
         onAddGroup={addGroup}
         onAddExpense={addExpense}
@@ -369,6 +386,8 @@ export default function HomeScreen() {
         expenses={user.expenses}
         dateKey={dateKey}
         onImportData={importData}
+        selectedMonthIndex={monthIndex}
+        onSwitchMonth={switchMonth}
       />
     </ParallaxScrollView>
   );

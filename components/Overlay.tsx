@@ -10,13 +10,13 @@ import containers from '@/styles/containers';
 import assets from "@/styles/assets";
 
 type Props = PropsWithChildren<{
-  headerImage: ReactElement;
   headerBackgroundColor: { dark: string; light: string };
   user: {
     name: string,
     avatar: string,
     groups: Group[],
   },
+  monthSelected: string,
   onChangeName(nameInput: string): void,
   onRemoveGroup(id: string, name: string): void,
   onRemoveGroups(): void,
@@ -24,9 +24,9 @@ type Props = PropsWithChildren<{
 
 export default function ParallaxScrollView({
   children,
-  headerImage,
   headerBackgroundColor,
   user,
+  monthSelected,
   onChangeName,
   onRemoveGroup,
   onRemoveGroups,
@@ -43,13 +43,13 @@ export default function ParallaxScrollView({
             style={
               { backgroundColor: headerBackgroundColor[colorScheme] }
             }>
-            {headerImage}
             <UserView
               name={user.name}
               groups={user.groups}
               onChangeName={onChangeName}
               onRemoveGroup={onRemoveGroup}
               onRemoveGroups={onRemoveGroups}
+              monthSelected={monthSelected}
               avatar={
                 <Image
                   source={require("@/assets/images/defaultAvatar.png")}

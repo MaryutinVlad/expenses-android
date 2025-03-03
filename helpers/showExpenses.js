@@ -6,7 +6,7 @@ export default function showExpenses(filter, expenses, groups, dateKey) {
   const currentMonthExpenses = expenses[curMonthIndex];
   const subResult = {}
   let group
-
+  // moved to findProfile effect in index.tsx
   /*if (currentMonthExpenses.date !== dateKey) {
     for (group of groups) {
       expensesSummary.push({

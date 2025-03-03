@@ -17,6 +17,8 @@ type Props = {
   onAddExpense(groupName: string, groupValue: number): void,
   onImportData(expenses: ExpensesEntry[], groups: Group[], relevantOn: string): void,
   onChangeProps(altName: string, altColor: string, ogName: string): void,
+  onSwitchMonth(next: boolean): void,
+  selectedMonthIndex: number,
   groups: Group[],
   expenses: ExpensesEntry[],
   dateKey: string,
@@ -27,23 +29,15 @@ export default function ContentView({
   groups,
   expenses,
   dateKey,
+  selectedMonthIndex,
   onChangeProps,
   onAddExpense,
   onImportData,
+  onSwitchMonth,
 }: Props) {
-
-  const curIndex = () => {
-     let result = expenses.findIndex(month => month.date === dateKey);
-     if (result === -1) {
-      result = expenses.length - 1;
-     }
-
-     return result;
-  };
 
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
   const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
-  const [ monthIndex, setMonthIndex ] = useState(() => curIndex());
   const [ filter, setFilter ] = useState(2);
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
@@ -61,6 +55,10 @@ export default function ContentView({
   const addGroup = (groupName: string, pickedColor: string) => {
     onAddGroup(groupName, pickedColor);
     setIsAddingGroup(false);
+  };
+
+  const switchMonth = (next: boolean) => {
+    return onSwitchMonth(next);
   };
 
   const exportData = async () => {
@@ -124,15 +122,13 @@ export default function ContentView({
       .catch(err => console.log("error while getting document:" + " " + err));
   };
 
-  const switchMonth = (next: boolean) => setMonthIndex(prev => next ? prev += 1 : prev -= 1);
-
   return (
     <View style={containers.stdList}>
       <View style={containers.rowApart}>
         <SwitchView
           onSwitchMonth={() => switchMonth(false)}
           reversed={true}
-          disabled={monthIndex === 0 ? true : false}
+          disabled={selectedMonthIndex === 0 ? true : false}
         />
         <Button
           title='Add group'
@@ -147,7 +143,7 @@ export default function ContentView({
         <SwitchView
           onSwitchMonth={() => switchMonth(true)}
           reversed={false}
-          disabled={monthIndex === expenses.length - 1 ? true : false}
+          disabled={selectedMonthIndex === expenses.length - 1 ? true : false}
         />
       </View>
       <View style={containers.stdList}>
@@ -206,10 +202,10 @@ export default function ContentView({
           groups={groups}
           expenses={expenses}
           filter={filter}
-          dateKey={expenses[monthIndex].date}
+          dateKey={expenses[selectedMonthIndex].date}
           onChangeProps={onChangeProps}
           onAddExpense={onAddExpense}
-          editable={dateKey === expenses[monthIndex].date ? true : false}
+          editable={dateKey === expenses[selectedMonthIndex].date ? true : false}
         />
       </View>
     </View>

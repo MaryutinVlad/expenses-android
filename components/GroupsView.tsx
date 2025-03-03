@@ -5,7 +5,7 @@ import { Group, ExpensesEntry } from "@/types/types";
 
 import showExpenses from "../helpers/showExpenses";
 import shortenValue from "@/helpers/shortenValue";
-import formateDate from "@/helpers/formateDate";
+import { formateDate } from "@/helpers/formateDate";
 
 import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";

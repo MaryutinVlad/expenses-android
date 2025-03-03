@@ -1,11 +1,11 @@
-export default function formateDate(date: string) {
+const months =  [ "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December" ];
+
+export function formateDate(date: string) {
 
   const isOldFormat = date.indexOf("/") < 0 ? true : false;
 
   // 4/13/2024 - new           13.4.2024 - old
-
-  const months =  [ "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December" ];
 
   const suffixes = [ "st", "nd", "rd", "th"];
 
@@ -32,4 +32,11 @@ export default function formateDate(date: string) {
   }
 
   return `${suffixedDay} of ${months[monthIndex]}, ${year}`;
+}
+
+export function formateShortDate(date: string) {
+  
+  const dateComponents = date.split("/").map(comp => Number(comp));
+
+  return `${months[dateComponents[0] - 1]} ${dateComponents[1]}`
 }
