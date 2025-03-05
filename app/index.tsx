@@ -1,4 +1,3 @@
-import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-get-random-values';
 
@@ -10,6 +9,8 @@ import { nanoid } from 'nanoid';
 
 import ParallaxScrollView from '@/components/Overlay';
 import ContentView from '@/components/ContentView';
+
+import { mergeExpenses } from '@/helpers/mergeExpenses';
 
 export default function HomeScreen() {
   
@@ -243,11 +244,10 @@ export default function HomeScreen() {
     return result;
   };
 
-  const mergeExpenses = (initialExpenses: ExpensesEntry[], importedExpenses: ExpensesEntry[]) => {
+  /*const mergeExpenses = (initialExpenses: ExpensesEntry[], importedExpenses: ExpensesEntry[]) => {
 
     const lastUpdated = user.profile.lastUpdated;
     const lastUpdatedKey = lastUpdated.replace(/\/\d{1,}\//, "/");
-
     const mergedExpenses: ExpensesEntry[] = [];
     
     let lastUpdatedIndex = importedExpenses.findIndex((expensesMonth) => expensesMonth.date === lastUpdatedKey);
@@ -262,7 +262,10 @@ export default function HomeScreen() {
 
       initialExpenses.map(expensesMonth => mergedExpenses.push(expensesMonth));
     } else {
-      for (let updatedIndex = 0; updatedIndex < lastUpdatedIndex; updatedIndex ++) {
+
+      let updatedIndex = 0;
+
+      for (updatedIndex; updatedIndex < lastUpdatedIndex; updatedIndex ++) {
         //copying expenses before last updated date beacause they are identical in initial data and imported file
         mergedExpenses.push(importedExpenses[updatedIndex]);
       };
@@ -287,8 +290,8 @@ export default function HomeScreen() {
 
             if (entry.createdOn !== shorterEntriesArray[index].createdOn) {
 
-              const longerCreationDay = entry.createdOn.split("/")[0];
-              const shorterCreationDay = shorterEntriesArray[index].createdOn.split("/")[0];
+              const longerCreationDay = Number(entry.createdOn.split("/")[0]);
+              const shorterCreationDay = Number(shorterEntriesArray[index].createdOn.split("/")[0]);
 
               if (longerCreationDay < shorterCreationDay) {
 
@@ -316,8 +319,8 @@ export default function HomeScreen() {
               relevantMonth.entries.push(entry);
             } else {
 
-              const curCreationDay = entry.createdOn.split("/")[0];
-              const prevCreationDay = longerEntriesArray[index - 1].createdOn.split("/")[0];
+              const curCreationDay = Number(entry.createdOn.split("/")[0]);
+              const prevCreationDay = Number(longerEntriesArray[index - 1].createdOn.split("/")[0]);
 
               if (curCreationDay > prevCreationDay) {
                 relevantMonth.entries.push(entry);
@@ -330,17 +333,31 @@ export default function HomeScreen() {
           }
         }
       });
-
       mergedExpenses.push(relevantMonth);
-
     }
-    
+
     return mergedExpenses;
-  };
+  };*/
 
   const importData = async (importedExpenses: ExpensesEntry[], importedGroups: Group[], relevantOn: string) => {
 
-    const updatedGroups = mergeGroups(user.profile.groups, importedGroups);
+
+    console.log("initial feb expenses")
+    console.log(user.expenses[0].entries.length)
+    const mergingTest = mergeExpenses(user.expenses, importedExpenses, user.profile.lastUpdated);
+    console.log(mergingTest.length + "--------------total months length")
+    console.log("merged expenses lengths by months")
+    mergingTest.map(month => {
+      console.log(month.date)
+      console.log(month.entries.length);
+    })
+    console.log("merged feb expenses")
+    console.log(mergingTest[0].entries)
+    console.log(mergingTest[1].entries)
+    console.log(importedExpenses[1].entries);
+    //mergeExpenses(user.expenses, importedExpenses, user.profile.lastUpdated)
+
+    /*const updatedGroups = mergeGroups(user.profile.groups, importedGroups);
     const updatedExpenses = mergeExpenses(user.expenses, importedExpenses);
 
     const updatedUser: User = {
@@ -353,9 +370,9 @@ export default function HomeScreen() {
       archive: user.archive,
     };
 
-    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    //await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
 
-    setUser(updatedUser);
+    //setUser(updatedUser);*/
   };
 
   useEffect(() => {
