@@ -44,7 +44,7 @@ export default function GroupsView({
     groupProps[group.groupName] = {
       color: group.groupColor,
       altName: group.altName ? group.altName : "",
-      altColor: group.altColor ? group.altColor : ""
+      altColor:  group.altColor ? group.altColor : ""
     };
   });
 
@@ -93,7 +93,7 @@ export default function GroupsView({
           <GroupView
             key={id}
             groupName={groupName}
-            altName={groupProps[groupName].altName ? groupProps[groupName].altName : ""}
+            altName={groupProps[groupName].altName}
             groupValue={groupValue}
             groupColor={groupProps[groupName].altColor ? groupProps[groupName].altColor : groupProps[groupName].color}
             expensesTotal={expensesTotal}
@@ -110,6 +110,7 @@ export default function GroupsView({
       }}>
         {
           expensesHistory.map(({ id, expenseGroup, expenseValue, createdOn }, index) => {
+            
             if (!index || expensesHistory[index].createdOn !== expensesHistory[index - 1].createdOn) {
 
               const formatedDate = formateDate(createdOn);
@@ -135,12 +136,10 @@ export default function GroupsView({
                       {expenseValue} in
                     </Text>
                     <Text style={{
-                      color: `${groupProps[expenseGroup].altColor
-                        ? groupProps[expenseGroup].altColor
-                        : groupProps[expenseGroup].color}`,
+                      color: `${groupProps[expenseGroup].altColor ? groupProps[expenseGroup].altColor : groupProps[expenseGroup].color}`,
                         ...fonts.stdHeader
                     }}>
-                      {groupProps[expenseGroup].altName ? groupProps[expenseGroup].altName : expenseGroup}
+                      {expenseGroup}
                     </Text>
                   </View>
                 </View>
@@ -155,12 +154,10 @@ export default function GroupsView({
                     {expenseValue} in
                   </Text>
                   <Text style={{
-                    color: `${groupProps[expenseGroup].altColor
-                      ? groupProps[expenseGroup].altColor
-                      : groupProps[expenseGroup].color}`,
+                    color: `${groupProps[expenseGroup].altColor ? groupProps[expenseGroup].altColor : groupProps[expenseGroup].color}`,
                       ...fonts.stdHeader
                   }}>
-                    {groupProps[expenseGroup].altName ? groupProps[expenseGroup].altName : expenseGroup}
+                    {expenseGroup}
                   </Text>
                 </View>
             )}

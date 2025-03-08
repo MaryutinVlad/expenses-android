@@ -43,7 +43,7 @@ export default function GroupView({
   const toggleAddExpense = () => editable && toggleGroupMenu(!groupMenu);
 
   const changeProps = (altName: string, altColor: string) => {
-    onChangeProps(altName, altColor, groupName)
+    onChangeProps(altName.trim(), altColor, groupName.trim())
     toggleGroupProps(false);
     toggleGroupMenu(false);
   };
@@ -55,7 +55,7 @@ export default function GroupView({
     }
     toggleGroupMenu(false);
     toggleGroupProps(false);
-    onAddExpense(groupName, Number(valueInput));
+    onAddExpense(groupName.trim(), Number(valueInput));
   };
 
   return (

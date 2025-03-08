@@ -23,6 +23,7 @@ export default function HomeScreen() {
       avatar: '',
       groups: [],
       lastUpdated: "2/11/2024",
+      trimmed: true,
     },
     expenses: [
       {
@@ -42,7 +43,7 @@ export default function HomeScreen() {
 
       if (profile !== null) {
 
-        const user = JSON.parse(profile)
+        const user: User = JSON.parse(profile)
 
         if (!user.profile.lastUpdated) {
           user.profile.lastUpdated = "2/11/2024";
@@ -53,6 +54,31 @@ export default function HomeScreen() {
             date: dateKey,
             entries: [],
           });
+        }
+
+        const fixCompatability = user.profile.groups.findIndex(group => group.groupName.trim() === "Заработала");
+
+        if (fixCompatability !== -1 ) {
+          user.profile.groups[fixCompatability].earnings = true;
+        }
+
+        if (!user.profile.trimmed) {
+          for (let month = 0; month < user.expenses.length; month ++) {
+            for (let expense = 0; expense < user.expenses[month].entries.length; expense ++) {
+              user.expenses[month].entries[expense].expenseGroup = user.expenses[month].entries[expense].expenseGroup.trim();
+            }
+          }
+  
+          for (let group = 0; group < user.profile.groups.length; group ++) {
+            user.profile.groups[group].groupName = user.profile.groups[group].groupName.trim();
+          }
+
+          user.profile.trimmed = true;
+
+          await AsyncStorage.setItem('expenses-app', JSON.stringify(user));
+          setMonthIndex(user.expenses.length - 1);
+          setUser(user);
+          return;
         }
 
         setMonthIndex(user.expenses.length - 1);
@@ -170,6 +196,7 @@ export default function HomeScreen() {
     };
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    setMonthIndex(0);
     setUser(updatedUser);
   };
 
@@ -219,24 +246,22 @@ export default function HomeScreen() {
     const mergingGroups: { [key: string]: Group } = {};
     const result: Group[] = [];
     
-    initialGroups.map(initialGroup => mergingGroups[initialGroup.groupName] =  {
-      ...initialGroup,
-      altColor: initialGroup.altColor ? initialGroup.altColor : "",
-      altName: initialGroup.altName ? initialGroup.altName : "",
-    });
     importedGroups.map(importedGroup => {
+      
       importedGroup.earnings = false;
-      if (importedGroup.groupName === "Заработала ") {
+      if (importedGroup.groupName === "Заработала") {
         importedGroup.earnings = true;
       }
 
-      mergingGroups[importedGroup.groupName] = {
-        ...importedGroup,
-        altName: mergingGroups[importedGroup.groupName].altName,
-        altColor: mergingGroups[importedGroup.groupName].altColor,
-      }
+      mergingGroups[importedGroup.groupName] = importedGroup;
     });
 
+    initialGroups.map(initialGroup => mergingGroups[initialGroup.groupName] =  {
+      ...initialGroup,
+      altColor: Object.hasOwn(initialGroup, "altColor") ? initialGroup.altColor : "",
+      altName: Object.hasOwn(initialGroup, "altName") ? initialGroup.altName : "",
+    });
+    
     for (let group in mergingGroups) {
       result.push(mergingGroups[group]);
     }
@@ -244,121 +269,10 @@ export default function HomeScreen() {
     return result;
   };
 
-  /*const mergeExpenses = (initialExpenses: ExpensesEntry[], importedExpenses: ExpensesEntry[]) => {
-
-    const lastUpdated = user.profile.lastUpdated;
-    const lastUpdatedKey = lastUpdated.replace(/\/\d{1,}\//, "/");
-    const mergedExpenses: ExpensesEntry[] = [];
-    
-    let lastUpdatedIndex = importedExpenses.findIndex((expensesMonth) => expensesMonth.date === lastUpdatedKey);
-
-    if (lastUpdatedIndex < 0) {
-      //thus there've never been data exchange before and the file should be imported entirely
-      if (initialExpenses.entries.length === 0) {
-
-        importedExpenses.map(expensesMonth => mergedExpenses.push(expensesMonth));
-        return mergedExpenses;
-      }
-
-      initialExpenses.map(expensesMonth => mergedExpenses.push(expensesMonth));
-    } else {
-
-      let updatedIndex = 0;
-
-      for (updatedIndex; updatedIndex < lastUpdatedIndex; updatedIndex ++) {
-        //copying expenses before last updated date beacause they are identical in initial data and imported file
-        mergedExpenses.push(importedExpenses[updatedIndex]);
-      };
-
-      const relevantMonth: ExpensesEntry = { date: lastUpdatedKey, entries: []};
-
-      const longerEntriesArray = initialExpenses[lastUpdatedIndex].entries.length > importedExpenses[lastUpdatedIndex].entries.length ?
-        initialExpenses[lastUpdatedIndex].entries : importedExpenses[lastUpdatedIndex].entries;
-
-      const shorterEntriesArray = initialExpenses[lastUpdatedIndex].entries.length < importedExpenses[lastUpdatedIndex].entries.length ?
-      initialExpenses[lastUpdatedIndex].entries : importedExpenses[lastUpdatedIndex].entries;
-
-      const daysChange: { [key: string]: number} = {};
-      
-      longerEntriesArray.map((entry, index) => {
-
-        if (shorterEntriesArray[index]) {
-
-          if (entry.id === shorterEntriesArray[index].id) {
-            relevantMonth.entries.push(entry);
-          } else {
-
-            if (entry.createdOn !== shorterEntriesArray[index].createdOn) {
-
-              const longerCreationDay = Number(entry.createdOn.split("/")[0]);
-              const shorterCreationDay = Number(shorterEntriesArray[index].createdOn.split("/")[0]);
-
-              if (longerCreationDay < shorterCreationDay) {
-
-                daysChange[shorterEntriesArray[index].createdOn] = index;
-
-                relevantMonth.entries.push(entry);
-                relevantMonth.entries.push(shorterEntriesArray[index]);
-              } else {
-
-                daysChange[entry.createdOn] = index;
-
-                relevantMonth.entries.push(shorterEntriesArray[index]);
-                relevantMonth.entries.push(entry);
-              }
-            } else {
-              relevantMonth.entries.push(entry);
-              relevantMonth.entries.push(shorterEntriesArray[index]);
-            }
-            
-          }
-        } else {
-
-          if (longerEntriesArray[index - 1]) {
-            if (entry.createdOn === longerEntriesArray[index - 1].createdOn) {
-              relevantMonth.entries.push(entry);
-            } else {
-
-              const curCreationDay = Number(entry.createdOn.split("/")[0]);
-              const prevCreationDay = Number(longerEntriesArray[index - 1].createdOn.split("/")[0]);
-
-              if (curCreationDay > prevCreationDay) {
-                relevantMonth.entries.push(entry);
-              } else {
-
-                const insertionIndex = daysChange[entry.createdOn];
-                relevantMonth.entries.splice(insertionIndex, 0, entry);
-              }
-            }
-          }
-        }
-      });
-      mergedExpenses.push(relevantMonth);
-    }
-
-    return mergedExpenses;
-  };*/
-
   const importData = async (importedExpenses: ExpensesEntry[], importedGroups: Group[], relevantOn: string) => {
 
-
-    console.log("initial feb expenses")
-    console.log(user.expenses[0].entries.length)
-    const mergingTest = mergeExpenses(user.expenses, importedExpenses, user.profile.lastUpdated);
-    console.log(mergingTest.length + "--------------total months length")
-    console.log("merged expenses lengths by months")
-    mergingTest.map(month => {
-      console.log(month.date)
-      console.log(month.entries.length);
-    })
-    console.log("merged feb expenses")
-    console.log(mergingTest[0].entries)
-    console.log(mergingTest[1].entries)
-    console.log(importedExpenses[1].entries);
-    //mergeExpenses(user.expenses, importedExpenses, user.profile.lastUpdated)
-
-    /*const updatedGroups = mergeGroups(user.profile.groups, importedGroups);
-    const updatedExpenses = mergeExpenses(user.expenses, importedExpenses);
+    const updatedExpenses = mergeExpenses(user.expenses, importedExpenses, user.profile.lastUpdated);
+    const updatedGroups = mergeGroups(user.profile.groups, importedGroups);
 
     const updatedUser: User = {
       profile: {
@@ -370,9 +284,9 @@ export default function HomeScreen() {
       archive: user.archive,
     };
 
-    //await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
+    await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
 
-    //setUser(updatedUser);*/
+    setUser(updatedUser);
   };
 
   useEffect(() => {

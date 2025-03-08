@@ -36,24 +36,27 @@ export default function ContentView({
   onSwitchMonth,
 }: Props) {
 
-  const [ isAddingGroup, setIsAddingGroup ] = useState(false);
-  const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
-  const [ filter, setFilter ] = useState(2);
+  const [isAddingGroup, setIsAddingGroup] = useState(false);
+  const [isSaveLoadOpen, setSaveLoadOpen] = useState(false);
+  const [filter, setFilter] = useState(2);
+  const [fileWorkingState, setFileWorkingState] = useState(["waiting..."]);
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
 
   const toggleGroupPopup = () => {
+    setFileWorkingState(["waiting..."]);
     setIsAddingGroup(!isAddingGroup);
     setSaveLoadOpen(false);
   };
 
   const toggleSaveLoadPopup = () => {
+    setFileWorkingState(["waiting..."]);
     setSaveLoadOpen(!isSaveLoadOpen);
     setIsAddingGroup(false);
   };
 
   const addGroup = (groupName: string, pickedColor: string) => {
-    onAddGroup(groupName, pickedColor);
+    onAddGroup(groupName.trim(), pickedColor);
     setIsAddingGroup(false);
   };
 
@@ -62,19 +65,34 @@ export default function ContentView({
   };
 
   const exportData = async () => {
-    
-    const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
 
-    if (permissions.granted) {
+    setFileWorkingState(["waiting..."]);
+    let permission = true;
+    let uri = "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FTelegram";
+    const fileKey = `${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}`;
+    const fileContent = {
+      expenses,
+      groups,
+      relevantOn: date.toLocaleDateString("en-US")
+    };
+    let fileUri = "";
 
-      const uri = permissions.directoryUri;
-      const fileKey = `${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}`;
-      const fileContent = {
-        expenses,
-        groups,
-        relevantOn: date.toLocaleDateString("en-US")
-      };
-      let fileUri = "";
+    await StorageAccessFramework.readDirectoryAsync(uri)
+      .then(() => setFileWorkingState(["permission granted"]))
+      .catch(async () => {
+
+        setFileWorkingState(["requesting for permission"]);
+        await StorageAccessFramework.requestDirectoryPermissionsAsync()
+          .then(response => {
+            if (response.granted) {
+              setFileWorkingState(cur => [...cur, "permission granted"]);
+              permission = response.granted;
+            }
+          })
+          .catch(() => setFileWorkingState(cur => [...cur, "error on permission request"]))
+      })
+
+    if (permission) {
 
       await StorageAccessFramework.readDirectoryAsync(uri)
         .then(files => files.find(file => file.match(fileKey)))
@@ -85,41 +103,42 @@ export default function ContentView({
 
           } else {
             StorageAccessFramework.deleteAsync(fileMatched)
-              .then(() => console.log("duplicate file deleted"))
-              .catch(err => console.log("error while deleting duplicate file" + " " + err));
+              .then(() => setFileWorkingState(cur => [...cur, "duplicate file deleted"]))
+              .catch(() => setFileWorkingState(cur => [...cur, "error while deleting duplicate file"]));
           }
         })
-        .catch(err => console.log("error while searching for and deleting duplicate file:" + " " + err));
+        .catch(() => setFileWorkingState(cur => [...cur, "error while searching for duplicate file"]));
 
-        
+
       await StorageAccessFramework.createFileAsync(uri, fileKey, "application/json")
         .then(result => fileUri = result)
-        .catch(err => console.log("error while creating new file:" + " " + err));
+        .catch(() => setFileWorkingState(cur => [...cur, "error while creating file"]));
 
       await StorageAccessFramework.writeAsStringAsync(fileUri, JSON.stringify(fileContent))
-        .then(() => console.log("data exported"))
-        .catch(err => console.log("error while writing into new file:" + " " + err));
-
-    } else {
-      return;
+        .then(() => setFileWorkingState(cur => [...cur, "data exported"]))
+        .catch(() => setFileWorkingState(cur => [...cur, "error while writing into file"]));
     }
   };
 
   const importData = async () => {
+    setFileWorkingState(["waiting..."]);
     await DocumentPicker.getDocumentAsync()
       .then(document => {
         if (document === null || document.assets === null) {
+          setFileWorkingState(cur => [...cur, "the file is irrelevant"]);
           return;
         } else {
+          setFileWorkingState(cur => [...cur, "file picked"]);
           StorageAccessFramework.readAsStringAsync(document.assets[0].uri)
             .then(data => {
-              const {expenses, groups, relevantOn} = JSON.parse(data);
+              const { expenses, groups, relevantOn } = JSON.parse(data);
+              setFileWorkingState(cur => [...cur, "file imported for merging"]);
               onImportData(expenses, groups, relevantOn);
             })
             .catch(err => console.log("error while reading document:" + " " + err));
         }
       })
-      .catch(err => console.log("error while getting document:" + " " + err));
+      .catch(() => setFileWorkingState(cur => [...cur, "error while picking file"]));
   };
 
   return (
@@ -160,6 +179,18 @@ export default function ContentView({
           isSaveLoadOpen && (
             <View style={containers.popup}>
               <Text style={fonts.stdHeader}>Data import and export</Text>
+              <View>
+                {
+                  fileWorkingState.map((state, index) => (
+                    <Text
+                      style={{fontSize: 16}}
+                      key={`state-key-${index}`}
+                    >
+                      &#187; {state}
+                    </Text>
+                  ))
+                }
+              </View>
               <View style={containers.rowTogether}>
                 <Button
                   title="export file"

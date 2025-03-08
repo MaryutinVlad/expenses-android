@@ -1,13 +1,13 @@
 export default function showExpenses(filter, expenses, groups, dateKey) {
 
   const curMonthIndex = expenses.findIndex(month => month.date === dateKey);
-  const expensesSummary = []
-  const expensesHistory = []
+  const expensesSummary = [];
+  const expensesHistory = [];
   const currentMonthExpenses = expenses[curMonthIndex];
-  const subResult = {}
-  let group
-  // moved to findProfile effect in index.tsx
-  /*if (currentMonthExpenses.date !== dateKey) {
+  const subResult = {};
+  let group;
+
+  if (currentMonthExpenses.date !== dateKey) {
     for (group of groups) {
       expensesSummary.push({
         id: group.id,
@@ -19,7 +19,7 @@ export default function showExpenses(filter, expenses, groups, dateKey) {
 
     return { expensesSummary, expensesHistory }
 
-  } else*/ if (filter === 2) {
+  } else if (filter === 2) {
 
     for (let expenseIndex = currentMonthExpenses.entries.length - 1; expenseIndex >= 0; expenseIndex--) {
       const currentExpense = currentMonthExpenses.entries[expenseIndex]
