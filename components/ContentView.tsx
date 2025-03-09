@@ -1,4 +1,4 @@
-import { View, Text, Button, Image } from "react-native";
+import { View, Text, Button } from "react-native";
 import { useState } from "react";
 import * as FileSystem from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
@@ -125,10 +125,10 @@ export default function ContentView({
     await DocumentPicker.getDocumentAsync()
       .then(document => {
         if (document === null || document.assets === null) {
-          setFileWorkingState(cur => ["the file is irrelevant"]);
+          setFileWorkingState(["the file is irrelevant"]);
           return;
         } else {
-          setFileWorkingState(cur => ["file picked"]);
+          setFileWorkingState(["file picked"]);
           StorageAccessFramework.readAsStringAsync(document.assets[0].uri)
             .then(data => {
               const { expenses, groups, relevantOn } = JSON.parse(data);
@@ -172,6 +172,7 @@ export default function ContentView({
               onSaveData={(groupName, pickedColor) => addGroup(groupName, pickedColor)}
               defaultName=""
               defaultColor="#016180"
+              groups={groups.map(group => group.groupName)}
             />
           )
         }

@@ -120,6 +120,7 @@ export default function GroupView({
                 onSaveData={changeProps}
                 defaultName={altName ? altName : groupName}
                 defaultColor={groupColor}
+                groups={[]}
               />
             )
           }

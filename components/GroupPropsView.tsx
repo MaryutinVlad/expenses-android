@@ -13,18 +13,22 @@ type Props = {
   onSaveData: ( groupName: string, pickedColor: string) => void,
   defaultName: string,
   defaultColor: string,
+  groups: string[],
 };
 
 export default function GroupPropsView({
   onSaveData,
   defaultName,
   defaultColor,
+  groups,
 }: Props) {
 
   const [ groupName, setGroupName ] = useState(defaultName);
   const [ pickedColor, setPickedColor ] = useState(defaultColor);
+  const [ errorMessageShown, setErrorMessageShown ] = useState(false);
 
   const saveData = () => {
+    setErrorMessageShown(false);
     onSaveData(groupName, pickedColor);
     setGroupName("");
     setPickedColor(defaultColor);
@@ -37,7 +41,14 @@ export default function GroupPropsView({
           Group name:
         </Text>
         <TextInput
-          onChangeText={setGroupName}
+          onChangeText={(text) => {
+            if (groups.length && (groups.findIndex(group => group === text.trim())) !== -1) {
+              setErrorMessageShown(true);
+            } else {
+              setErrorMessageShown(false);
+            }
+            setGroupName(text);
+          }}
           defaultValue={defaultName}
           maxLength={15}
           autoCorrect={false}
@@ -48,6 +59,11 @@ export default function GroupPropsView({
           }}
         />
       </View>
+      {
+        errorMessageShown && (
+          <Text style={{color: "red"}}>&#187; Group with this name already exists</Text>
+        )
+      }
       <View>
         <Text style={fonts.stdHeader}>
           Pick group color: &#x2193;
@@ -75,7 +91,7 @@ export default function GroupPropsView({
           title="save"
           color={pickedColor}
           onPress={saveData}
-          disabled={groupName ? false : true}
+          disabled={(!groupName || errorMessageShown) ? true : false}
         />
       </View>
     </View>
