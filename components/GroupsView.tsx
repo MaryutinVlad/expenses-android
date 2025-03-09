@@ -1,4 +1,5 @@
 import { View, Text } from "react-native";
+import { useState } from "react";
 
 import GroupView from "./GroupView";
 import { Group, ExpensesEntry } from "@/types/types";
@@ -25,6 +26,7 @@ type GroupProps = {
     color: string,
     altName: string,
     altColor: string,
+    isOpened: boolean,
   }
 };
 
@@ -44,11 +46,15 @@ export default function GroupsView({
     groupProps[group.groupName] = {
       color: group.groupColor,
       altName: group.altName ? group.altName : "",
-      altColor:  group.altColor ? group.altColor : ""
+      altColor:  group.altColor ? group.altColor : "",
+      isOpened: false
     };
   });
 
+  const [ openedGroup, setOpenedGroup ] = useState("");
   const { expensesSummary, expensesHistory } = showExpenses(filter, expenses, groups, dateKey);
+  
+  const toggleGroup = (groupName: string) => setOpenedGroup(prev => prev === groupName ? "" : groupName);
 
   let expensesTotal = 0;
   let profitsTotal = 0;
@@ -101,6 +107,8 @@ export default function GroupsView({
             onAddExpense={onAddExpense}
             earnings={earnings}
             editable={editable}
+            onToggleGroup={toggleGroup}
+            isOpened={groupName === openedGroup ? true : false}
           />
         ))
       }

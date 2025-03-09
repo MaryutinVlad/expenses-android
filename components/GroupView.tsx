@@ -19,6 +19,8 @@ type Props = {
   altName: string,
   expensesTotal: number,
   editable: boolean,
+  isOpened: boolean,
+  onToggleGroup(groupName: string): void,
   onChangeProps( altName: string, altColor: string, ogName: string ): void,
   onAddExpense( groupName: string, groupValue: number ): void,
 }
@@ -33,19 +35,25 @@ export default function GroupView({
   expensesTotal,
   onAddExpense,
   editable,
+  isOpened,
+  onToggleGroup,
 }: Props) {
 
-  const [ groupMenu, toggleGroupMenu ] = useState(false);
   const [ groupProps, toggleGroupProps ] = useState(false);
 
   const percentage = groupValue === 0 ? 0 : (groupValue / expensesTotal);
 
-  const toggleAddExpense = () => editable && toggleGroupMenu(!groupMenu);
+  const toggleAddExpense = () => {
+    if (editable) {
+      onToggleGroup(groupName);
+      toggleGroupProps(false);
+    }
+  }
 
   const changeProps = (altName: string, altColor: string) => {
     onChangeProps(altName.trim(), altColor, groupName.trim())
     toggleGroupProps(false);
-    toggleGroupMenu(false);
+    onToggleGroup(groupName);
   };
 
   const addExpense = (valueInput: string) => {
@@ -53,7 +61,7 @@ export default function GroupView({
       console.log("invalid input");
       return;
     }
-    toggleGroupMenu(false);
+    onToggleGroup(groupName);
     toggleGroupProps(false);
     onAddExpense(groupName.trim(), Number(valueInput));
   };
@@ -93,7 +101,7 @@ export default function GroupView({
         </Pressable>
       </LinearGradient>
 
-      {groupMenu && (
+      {isOpened && (
         <View style={containers.stdList}>
           <View style={containers.rowApart}>
             <Button

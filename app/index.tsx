@@ -1,3 +1,11 @@
+/*
+  in functions like changeProps where search based on group name involved
+  there is a vulnerability in case someone creates another group with the same name
+
+  it is also present in groupProps in GroupsView and maybe other places
+
+  instead group name those functions could use id
+*/
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-get-random-values';
 
@@ -248,6 +256,7 @@ export default function HomeScreen() {
     
     importedGroups.map(importedGroup => {
       
+      //to remove on adding earnings feature in addGroup
       importedGroup.earnings = false;
       if (importedGroup.groupName === "Заработала") {
         importedGroup.earnings = true;

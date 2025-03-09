@@ -125,17 +125,17 @@ export default function ContentView({
     await DocumentPicker.getDocumentAsync()
       .then(document => {
         if (document === null || document.assets === null) {
-          setFileWorkingState(cur => [...cur, "the file is irrelevant"]);
+          setFileWorkingState(cur => ["the file is irrelevant"]);
           return;
         } else {
-          setFileWorkingState(cur => [...cur, "file picked"]);
+          setFileWorkingState(cur => ["file picked"]);
           StorageAccessFramework.readAsStringAsync(document.assets[0].uri)
             .then(data => {
               const { expenses, groups, relevantOn } = JSON.parse(data);
               setFileWorkingState(cur => [...cur, "file imported for merging"]);
               onImportData(expenses, groups, relevantOn);
             })
-            .catch(err => console.log("error while reading document:" + " " + err));
+            .catch(() => setFileWorkingState(cur => [...cur, "error while reading file"]));
         }
       })
       .catch(() => setFileWorkingState(cur => [...cur, "error while picking file"]));
