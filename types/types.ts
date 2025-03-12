@@ -13,6 +13,7 @@ export type Expense = {
   createdOn: string,
   expenseGroup: string,
   expenseValue: number,
+  toOmit?: boolean
 };
 
 export type ExpensesEntry = {

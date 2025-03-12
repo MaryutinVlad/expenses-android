@@ -17,8 +17,10 @@ export function sortByDay(array: Expense[]) {
 
     if (aToCompare < bToCompare) {
       return -1;
-    } else {
+    } else if (aToCompare > bToCompare) {
       return 1;
+    } else {
+      return 0;
     }
   });
 };
@@ -61,22 +63,46 @@ export function mergeConflictMonth(
 
   const preupdatedValues : Expense[] = [];
 
-  const withLessEntries = initialMonth.length <= importedMonth.length ? importedMonth : initialMonth;
   const withMoreEntries = initialMonth.length >= importedMonth.length ? initialMonth : importedMonth;
+  const withLessEntries = withMoreEntries === importedMonth ? initialMonth : importedMonth;
 
-  let curDayIndex = 0;
+  let curExpIndex = 0;
 
-  for (curDayIndex; curDayIndex < withLessEntries.length; curDayIndex ++) {
+  const searchForConflicts = (withMoreEntries: Expense[] , withLessEntries: Expense[], startingIndex: number) => {
 
-    if (withMoreEntries[curDayIndex].id === withLessEntries[curDayIndex].id) {
-      preupdatedValues.push(withMoreEntries[curDayIndex]);
+    const result: Expense[] = [...withMoreEntries]
+    //starts from first encounter of unequal ids
+    for (startingIndex; startingIndex < result.length; startingIndex ++) {
+
+      const conflictIndex = withLessEntries.findLastIndex(entry => entry.id === result[startingIndex].id);
+
+      if (conflictIndex !== -1) {
+        result[startingIndex].toOmit = true;
+      }
+
+    }
+
+    const updatedWithMoreEntries = result.filter(entry => !entry.toOmit);
+    return updatedWithMoreEntries;
+  }
+  
+  let updatedMoreEntries;
+
+  for (curExpIndex; curExpIndex < withLessEntries.length; curExpIndex ++) {
+
+    if (withMoreEntries[curExpIndex].id === withLessEntries[curExpIndex].id) {
+      preupdatedValues.push(withMoreEntries[curExpIndex]);
     } else {
       break;
     }
   };
+
+  updatedMoreEntries = searchForConflicts(withMoreEntries, withLessEntries, curExpIndex);
+
   
-  const uniqueExpenses = Array.from([...withMoreEntries.slice(curDayIndex), ...withLessEntries.slice(curDayIndex)]);
+  const uniqueExpenses = Array.from([...updatedMoreEntries.slice(curExpIndex), ...withLessEntries.slice(curExpIndex)]);
   const sortedUniques = sortByDay(uniqueExpenses);
+  
 
   return [...preupdatedValues, ...sortedUniques];
 };

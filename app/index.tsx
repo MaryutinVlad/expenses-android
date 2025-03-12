@@ -295,6 +295,7 @@ export default function HomeScreen() {
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
 
+    setMonthIndex(updatedExpenses.length - 1)
     setUser(updatedUser);
   };
 
