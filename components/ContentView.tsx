@@ -40,6 +40,7 @@ export default function ContentView({
   const [isSaveLoadOpen, setSaveLoadOpen] = useState(false);
   const [filter, setFilter] = useState(2);
   const [fileWorkingState, setFileWorkingState] = useState(["waiting..."]);
+  const [filesToImport, setFilesToImport] = useState([""]);
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
 
@@ -47,12 +48,14 @@ export default function ContentView({
     setFileWorkingState(["waiting..."]);
     setIsAddingGroup(!isAddingGroup);
     setSaveLoadOpen(false);
+    setFilesToImport([""]);
   };
 
   const toggleSaveLoadPopup = () => {
     setFileWorkingState(["waiting..."]);
     setSaveLoadOpen(!isSaveLoadOpen);
     setIsAddingGroup(false);
+    setFilesToImport([""]);
   };
 
   const addGroup = (groupName: string, pickedColor: string, earnings: boolean) => {
@@ -67,7 +70,6 @@ export default function ContentView({
   const exportData = async () => {
 
     setFileWorkingState(["waiting..."]);
-    let permission = true;
     let uri = "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FTelegram";
     const fileKey = `${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}`;
     const fileContent = {
@@ -78,51 +80,64 @@ export default function ContentView({
     let fileUri = "";
 
     await StorageAccessFramework.readDirectoryAsync(uri)
-      .then(() => setFileWorkingState(["permission granted"]))
+      .then(async (files) => {
+
+        setFileWorkingState(["permission granted"]);
+
+        const fileMatched = files.find(file => file.match(fileKey));
+
+        if (fileMatched) {
+          await StorageAccessFramework.deleteAsync(fileMatched)
+            .then(() => setFileWorkingState(cur => [...cur, "duplicate file deleted"]))
+            .catch(() => setFileWorkingState(cur => [...cur, "error while deleting duplicate file"]));
+        }
+
+        await StorageAccessFramework.createFileAsync(uri, fileKey, "application/json")
+          .then(result => fileUri = result)
+          .catch(() => setFileWorkingState(cur => [...cur, "error while creating file"]));
+
+        await StorageAccessFramework.writeAsStringAsync(fileUri, JSON.stringify(fileContent))
+          .then(() => setFileWorkingState(cur => [...cur, "data exported"]))
+          .catch(() => setFileWorkingState(cur => [...cur, "error while writing into file"]));
+      })
       .catch(async () => {
 
-        setFileWorkingState(["requesting for permission"]);
+        setFileWorkingState(["requesting permission"]);
         await StorageAccessFramework.requestDirectoryPermissionsAsync()
           .then(response => {
             if (response.granted) {
               setFileWorkingState(cur => [...cur, "permission granted"]);
-              permission = response.granted;
             }
           })
           .catch(() => setFileWorkingState(cur => [...cur, "error on permission request"]))
       })
-
-    if (permission) {
-
-      await StorageAccessFramework.readDirectoryAsync(uri)
-        .then(files => files.find(file => file.match(fileKey)))
-        .then(fileMatched => {
-
-          if (!fileMatched) {
-            return;
-
-          } else {
-            StorageAccessFramework.deleteAsync(fileMatched)
-              .then(() => setFileWorkingState(cur => [...cur, "duplicate file deleted"]))
-              .catch(() => setFileWorkingState(cur => [...cur, "error while deleting duplicate file"]));
-          }
-        })
-        .catch(() => setFileWorkingState(cur => [...cur, "error while searching for duplicate file"]));
-
-
-      await StorageAccessFramework.createFileAsync(uri, fileKey, "application/json")
-        .then(result => fileUri = result)
-        .catch(() => setFileWorkingState(cur => [...cur, "error while creating file"]));
-
-      await StorageAccessFramework.writeAsStringAsync(fileUri, JSON.stringify(fileContent))
-        .then(() => setFileWorkingState(cur => [...cur, "data exported"]))
-        .catch(() => setFileWorkingState(cur => [...cur, "error while writing into file"]));
-    }
   };
 
-  const importData = async () => {
+  const pickFileToImport = async () => {
+
     setFileWorkingState(["waiting..."]);
-    await DocumentPicker.getDocumentAsync()
+
+    let uri = "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FTelegram";
+
+    await StorageAccessFramework.readDirectoryAsync(uri)
+      .then(files => {
+        const relevantFiles = files.filter(file => file.match(/\d{1,2}_\d{1,2}_\d{4,}(\S{1,})?.json/));
+        setFileWorkingState(cur => [...cur, "choose file for import"]);
+        setFilesToImport(relevantFiles);
+      })
+      .catch(async () => {
+
+        setFileWorkingState(["requesting permission"]);
+
+        await StorageAccessFramework.requestDirectoryPermissionsAsync()
+          .then(response => {
+            if (response.granted) {
+              setFileWorkingState(cur => [...cur, "permission granted"]);
+            }
+          })
+          .catch(() => setFileWorkingState(cur => [...cur, "error on permission request"]))
+      });
+    /*await DocumentPicker.getDocumentAsync()
       .then(document => {
         if (document === null || document.assets === null) {
           setFileWorkingState(["the file is irrelevant"]);
@@ -138,7 +153,7 @@ export default function ContentView({
             .catch(() => setFileWorkingState(cur => [...cur, "error while reading file"]));
         }
       })
-      .catch(() => setFileWorkingState(cur => [...cur, "error while picking file"]));
+      .catch(() => setFileWorkingState(cur => [...cur, "error while picking file"]));*/
   };
 
   return (
@@ -181,18 +196,37 @@ export default function ContentView({
           isSaveLoadOpen && (
             <View style={containers.popup}>
               <Text style={fonts.stdHeader}>Data import and export</Text>
-              <View>
-                {
-                  fileWorkingState.map((state, index) => (
-                    <Text
-                      style={{fontSize: 16}}
-                      key={`state-key-${index}`}
+              {
+                fileWorkingState.map((state, index) => (
+                  <Text
+                    style={{ fontSize: 16 }}
+                    key={`state-key-${index}`}
+                  >
+                    &#187; {state}
+                  </Text>
+                ))
+              }
+              {
+                filesToImport[0] && filesToImport.map((file, index) => {
+                  
+                  const preRender = file
+                    .split("%")
+                    .filter(part => part.match(".json") || part.match(/\d{1,2}_\d{1,2}_\d{4,}/));
+
+                  const toRender = preRender.length === 2 ?
+                    preRender.join("20").replace(/2F/, "") :
+                    preRender[0].replace(/2F/, "");
+
+                  return (
+                    <View
+                      key={`file-to-import-${index}`}
+                      style={containers.rowTogether}
                     >
-                      &#187; {state}
-                    </Text>
-                  ))
-                }
-              </View>
+                      <Text>{toRender}</Text>
+                    </View>
+                  )
+                })
+              }
               <View style={containers.rowTogether}>
                 <Button
                   title="export file"
@@ -200,7 +234,7 @@ export default function ContentView({
                 />
                 <Button
                   title="import file"
-                  onPress={importData}
+                  onPress={pickFileToImport}
                 />
               </View>
             </View>
