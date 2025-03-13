@@ -39,7 +39,7 @@ export type User = {
     avatar: string,
     groups: Group[],
     lastUpdated: string,
-    trimmed: boolean,
+    trimmed?: boolean,
   },
   expenses: ExpensesEntry[],
   archive: ArchiveEntry[],

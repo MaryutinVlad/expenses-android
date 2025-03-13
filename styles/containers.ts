@@ -1,3 +1,4 @@
+import Checkbox from "expo-checkbox";
 import { StyleSheet } from "react-native";
 
 const containers = StyleSheet.create({
@@ -65,6 +66,12 @@ const containers = StyleSheet.create({
     height: 40,
     paddingLeft: 8,
   },
+  checkbox: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    width: "50%",
+    gap: 10,
+  }
 });
 
 export default containers;

@@ -95,7 +95,10 @@ export default function GroupView({
           }}>
             {altName ? altName : groupName}
           </Text>
-          <Text style={fonts.bigHeader}>
+          <Text style={{
+            ...fonts.bigHeader,
+            color: earnings ? "green" : "black"
+          }}>
             {groupValue >= 1000000 ? shortenValue(groupValue) : groupValue}
           </Text>          
         </Pressable>
@@ -120,6 +123,7 @@ export default function GroupView({
                 onSaveData={changeProps}
                 defaultName={altName ? altName : groupName}
                 defaultColor={groupColor}
+                switchableType={false}
                 groups={[]}
               />
             )

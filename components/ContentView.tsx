@@ -13,7 +13,7 @@ import fonts from "@/styles/fonts";
 import { Group, ExpensesEntry } from "@/types/types";
 
 type Props = {
-  onAddGroup(groupName: string, pickedColor: string): void,
+  onAddGroup(groupName: string, pickedColor: string, earnings: boolean): void,
   onAddExpense(groupName: string, groupValue: number): void,
   onImportData(expenses: ExpensesEntry[], groups: Group[], relevantOn: string): void,
   onChangeProps(altName: string, altColor: string, ogName: string): void,
@@ -55,8 +55,8 @@ export default function ContentView({
     setIsAddingGroup(false);
   };
 
-  const addGroup = (groupName: string, pickedColor: string) => {
-    onAddGroup(groupName.trim(), pickedColor);
+  const addGroup = (groupName: string, pickedColor: string, earnings: boolean) => {
+    onAddGroup(groupName.trim(), pickedColor, earnings);
     setIsAddingGroup(false);
   };
 
@@ -169,9 +169,10 @@ export default function ContentView({
         {
           isAddingGroup && (
             <GroupPropsView
-              onSaveData={(groupName, pickedColor) => addGroup(groupName, pickedColor)}
+              onSaveData={(groupName, pickedColor, groupType) => addGroup(groupName, pickedColor, groupType)}
               defaultName=""
               defaultColor="#016180"
+              switchableType={true}
               groups={groups.map(group => group.groupName)}
             />
           )

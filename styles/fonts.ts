@@ -14,6 +14,9 @@ const fonts = StyleSheet.create({
   bigHeader: {
     fontSize: 23,
   },
+  smallHeader: {
+    fontSize: 18,
+  }
 });
 
 export default fonts;

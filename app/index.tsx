@@ -1,11 +1,4 @@
-/*
-  in functions like changeProps where search based on group name involved
-  there is a vulnerability in case someone creates another group with the same name
 
-  it is also present in groupProps in GroupsView and maybe other places
-
-  instead group name those functions could use id
-*/
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-get-random-values';
 
@@ -31,7 +24,6 @@ export default function HomeScreen() {
       avatar: '',
       groups: [],
       lastUpdated: "2/11/2024",
-      trimmed: true,
     },
     expenses: [
       {
@@ -51,10 +43,10 @@ export default function HomeScreen() {
 
       if (profile !== null) {
 
-        const user: User = JSON.parse(profile)
-
-        if (!user.profile.lastUpdated) {
-          user.profile.lastUpdated = "2/11/2024";
+        const user: User = JSON.parse(profile);
+        
+        if (user.profile.trimmed) {
+          delete user.profile.trimmed;
         }
 
         if (user.expenses[user.expenses.length - 1].date !== dateKey) {
@@ -62,31 +54,6 @@ export default function HomeScreen() {
             date: dateKey,
             entries: [],
           });
-        }
-
-        const fixCompatability = user.profile.groups.findIndex(group => group.groupName.trim() === "Заработала");
-
-        if (fixCompatability !== -1 ) {
-          user.profile.groups[fixCompatability].earnings = true;
-        }
-
-        if (!user.profile.trimmed) {
-          for (let month = 0; month < user.expenses.length; month ++) {
-            for (let expense = 0; expense < user.expenses[month].entries.length; expense ++) {
-              user.expenses[month].entries[expense].expenseGroup = user.expenses[month].entries[expense].expenseGroup.trim();
-            }
-          }
-  
-          for (let group = 0; group < user.profile.groups.length; group ++) {
-            user.profile.groups[group].groupName = user.profile.groups[group].groupName.trim();
-          }
-
-          user.profile.trimmed = true;
-
-          await AsyncStorage.setItem('expenses-app', JSON.stringify(user));
-          setMonthIndex(user.expenses.length - 1);
-          setUser(user);
-          return;
         }
 
         setMonthIndex(user.expenses.length - 1);
@@ -135,7 +102,7 @@ export default function HomeScreen() {
     setUser(updatedUser);
   };
 
-  const addGroup = async (groupName: string, pickedColor: string) => {
+  const addGroup = async (groupName: string, pickedColor: string, earnings: boolean) => {
 
     const groupValues = {
       id: nanoid(),
@@ -144,7 +111,7 @@ export default function HomeScreen() {
       createdOn: date.toLocaleDateString("en-US"),
       altName: "",
       altColor: "",
-      earnings: false,
+      earnings: earnings,
     };
 
     const updatedUser: User = {
@@ -255,12 +222,6 @@ export default function HomeScreen() {
     const result: Group[] = [];
     
     importedGroups.map(importedGroup => {
-      
-      //to remove on adding earnings feature in addGroup
-      importedGroup.earnings = false;
-      if (importedGroup.groupName === "Заработала") {
-        importedGroup.earnings = true;
-      }
 
       mergingGroups[importedGroup.groupName] = importedGroup;
     });

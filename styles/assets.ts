@@ -1,3 +1,4 @@
+import Checkbox from "expo-checkbox";
 import { StyleSheet } from "react-native";
 
 const assets = StyleSheet.create({
@@ -11,6 +12,10 @@ const assets = StyleSheet.create({
     height: 35,
     margin: "auto",
     borderRadius: 3
+  },
+  checkbox: {
+    width: 25,
+    height: 25,
   }
 });
 
