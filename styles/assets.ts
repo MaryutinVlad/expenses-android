@@ -7,6 +7,11 @@ const assets = StyleSheet.create({
     height: 40,
     objectFit: "contain",
   },
+  smallIcon: {
+    width: 20,
+    height: 20,
+    objectFit: "contain",
+  },
   color: {
     width: 35,
     height: 35,

@@ -1,7 +1,6 @@
-import { View, Text, Button } from "react-native";
+import { View, Text, Button, Image, Pressable } from "react-native";
 import { useState } from "react";
 import * as FileSystem from "expo-file-system";
-import * as DocumentPicker from "expo-document-picker";
 
 import GroupsView from "./GroupsView";
 import GroupPropsView from "./GroupPropsView";
@@ -9,6 +8,7 @@ import SwitchView from "./SwitchView";
 
 import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
+import assets from "@/styles/assets";
 
 import { Group, ExpensesEntry } from "@/types/types";
 
@@ -36,11 +36,12 @@ export default function ContentView({
   onSwitchMonth,
 }: Props) {
 
-  const [isAddingGroup, setIsAddingGroup] = useState(false);
-  const [isSaveLoadOpen, setSaveLoadOpen] = useState(false);
-  const [filter, setFilter] = useState(2);
-  const [fileWorkingState, setFileWorkingState] = useState(["waiting..."]);
-  const [filesToImport, setFilesToImport] = useState([""]);
+  const [ isAddingGroup, setIsAddingGroup ] = useState(false);
+  const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
+  const [ filter, setFilter ] = useState(2);
+  const [ fileWorkingState, setFileWorkingState ] = useState(["waiting..."]);
+  const [ filesToImport, setFilesToImport ] = useState([""]);
+  const [ filePickedIndex, setFilePickedIndex ] = useState(-1);
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
 
@@ -116,13 +117,14 @@ export default function ContentView({
   const pickFileToImport = async () => {
 
     setFileWorkingState(["waiting..."]);
+    setFilePickedIndex(-1);
 
     let uri = "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FTelegram";
 
     await StorageAccessFramework.readDirectoryAsync(uri)
       .then(files => {
         const relevantFiles = files.filter(file => file.match(/\d{1,2}_\d{1,2}_\d{4,}(\S{1,})?.json/));
-        setFileWorkingState(cur => [...cur, "choose file for import"]);
+        setFileWorkingState(() => ["choose file for import"]);
         setFilesToImport(relevantFiles);
       })
       .catch(async () => {
@@ -137,24 +139,36 @@ export default function ContentView({
           })
           .catch(() => setFileWorkingState(cur => [...cur, "error on permission request"]))
       });
-    /*await DocumentPicker.getDocumentAsync()
-      .then(document => {
-        if (document === null || document.assets === null) {
-          setFileWorkingState(["the file is irrelevant"]);
+  };
+
+  const importFile = async (file: string, index: number) => {
+  
+    setFileWorkingState(() => ["file picked"]);
+
+    await StorageAccessFramework.readAsStringAsync(file)
+      .then(content => {
+        if (content === null || !content) {
+          setFileWorkingState(cur => [...cur, "the file is irrelevant"]);
+          setFilePickedIndex(-1);
           return;
         } else {
-          setFileWorkingState(["file picked"]);
-          StorageAccessFramework.readAsStringAsync(document.assets[0].uri)
-            .then(data => {
-              const { expenses, groups, relevantOn } = JSON.parse(data);
-              setFileWorkingState(cur => [...cur, "file imported for merging"]);
-              onImportData(expenses, groups, relevantOn);
-            })
-            .catch(() => setFileWorkingState(cur => [...cur, "error while reading file"]));
+          const { expenses, groups, relevantOn } = JSON.parse(content);
+          setFilePickedIndex(index);
+          setFileWorkingState(cur => [...cur, "file imported for merging"]);
+          onImportData(expenses, groups, relevantOn);
         }
       })
-      .catch(() => setFileWorkingState(cur => [...cur, "error while picking file"]));*/
+      .catch(() => setFileWorkingState(cur => [...cur, "error while reading file"]));
   };
+
+  const deleteFile = async (index: number) => {
+    await StorageAccessFramework.deleteAsync(filesToImport[index])
+      .then(() => {
+        setFileWorkingState(cur => [...cur, "file deleted"]);
+        setFilesToImport([...filesToImport.slice(0, index), ...filesToImport.slice(index + 1)]);
+      })
+      .catch(() => setFileWorkingState(cur => [...cur, "error while deleting file"]))
+  }
 
   return (
     <View style={containers.stdList}>
@@ -208,21 +222,51 @@ export default function ContentView({
               }
               {
                 filesToImport[0] && filesToImport.map((file, index) => {
-                  
+
                   const preRender = file
                     .split("%")
                     .filter(part => part.match(".json") || part.match(/\d{1,2}_\d{1,2}_\d{4,}/));
 
                   const toRender = preRender.length === 2 ?
-                    preRender.join("20").replace(/2F/, "") :
+                    preRender.join("").replace(/2F/, "").replace(/\d{1,2}\(/, "(") :
                     preRender[0].replace(/2F/, "");
 
                   return (
                     <View
                       key={`file-to-import-${index}`}
-                      style={containers.rowTogether}
+                      style={{
+                        ...containers.rowTogether,
+                        borderBottomWidth: .5,
+                        marginHorizontal: 10,
+                        paddingHorizontal: 5,
+                        marginVertical: 3,
+                      }}
                     >
-                      <Text>{toRender}</Text>
+                      <Pressable
+                        style={containers.rowTogether}
+                        onPress={() => importFile(file, index)}
+                      >
+                        <Image
+                          style={assets.smallIcon}
+                          source={require("@/assets/images/folder.png")}
+                        />
+                        <Text style={{
+                          ...fonts.smallHeader,
+                          color: filePickedIndex === index ? "green" : "black",
+                          }}
+                        >
+                          {toRender}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        style={{ marginLeft: "auto" }}
+                        onPress={() => deleteFile(index)}
+                      >
+                        <Image
+                          style={assets.smallIcon}
+                          source={require("@/assets/images/clear.png")}
+                        />
+                      </Pressable>
                     </View>
                   )
                 })
