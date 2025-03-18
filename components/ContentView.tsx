@@ -41,9 +41,11 @@ export default function ContentView({
   const [ filter, setFilter ] = useState(2);
   const [ fileWorkingState, setFileWorkingState ] = useState(["waiting..."]);
   const [ filesToImport, setFilesToImport ] = useState([""]);
-  const [ filePickedIndex, setFilePickedIndex ] = useState(-1);
+  const [ pickedFileIndex, setPickedFileIndex ] = useState(-1);
+
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
+  const isLastMonth = expenses[selectedMonthIndex].date === dateKey;
 
   const toggleGroupPopup = () => {
     setFileWorkingState(["waiting..."]);
@@ -117,14 +119,16 @@ export default function ContentView({
   const pickFileToImport = async () => {
 
     setFileWorkingState(["waiting..."]);
-    setFilePickedIndex(-1);
+    setPickedFileIndex(-1);
 
     let uri = "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FTelegram";
 
     await StorageAccessFramework.readDirectoryAsync(uri)
       .then(files => {
         const relevantFiles = files.filter(file => file.match(/\d{1,2}_\d{1,2}_\d{4,}(\S{1,})?.json/));
-        setFileWorkingState(() => ["choose file for import"]);
+        !relevantFiles.length ?
+          setFileWorkingState(() => ["no files detected"]) :
+          setFileWorkingState(() => ["choose file for import"]);
         setFilesToImport(relevantFiles);
       })
       .catch(async () => {
@@ -149,11 +153,11 @@ export default function ContentView({
       .then(content => {
         if (content === null || !content) {
           setFileWorkingState(cur => [...cur, "the file is irrelevant"]);
-          setFilePickedIndex(-1);
+          setPickedFileIndex(-1);
           return;
         } else {
           const { expenses, groups, relevantOn } = JSON.parse(content);
-          setFilePickedIndex(index);
+          setPickedFileIndex(index);
           setFileWorkingState(cur => [...cur, "file imported for merging"]);
           onImportData(expenses, groups, relevantOn);
         }
@@ -164,7 +168,7 @@ export default function ContentView({
   const deleteFile = async (index: number) => {
     await StorageAccessFramework.deleteAsync(filesToImport[index])
       .then(() => {
-        setFileWorkingState(cur => [...cur, "file deleted"]);
+        setFileWorkingState(cur => ["file deleted"]);
         setFilesToImport([...filesToImport.slice(0, index), ...filesToImport.slice(index + 1)]);
       })
       .catch(() => setFileWorkingState(cur => [...cur, "error while deleting file"]))
@@ -252,7 +256,7 @@ export default function ContentView({
                         />
                         <Text style={{
                           ...fonts.smallHeader,
-                          color: filePickedIndex === index ? "green" : "black",
+                          color: pickedFileIndex === index ? "#008000" : "#000000",
                           }}
                         >
                           {toRender}
@@ -294,17 +298,17 @@ export default function ContentView({
           <View style={containers.rowTogether}>
             <Button
               title="day"
-              disabled//={filter === 0 ? true : false}
+              disabled={filter === 0 ? true : false || !isLastMonth}
               onPress={() => setFilter(0)}
             />
             <Button
               title="week"
-              disabled//={filter === 1 ? true : false}
+              disabled={(filter === 1 ? true : false) || !isLastMonth}
               onPress={() => setFilter(1)}
             />
             <Button
               title="month"
-              disabled={filter === 2 ? true : false}
+              disabled={filter === 2 ? true : false || !isLastMonth}
               onPress={() => setFilter(2)}
             />
           </View>
@@ -312,7 +316,7 @@ export default function ContentView({
         <GroupsView
           groups={groups}
           expenses={expenses}
-          filter={filter}
+          filter={isLastMonth ? filter : 2}
           dateKey={expenses[selectedMonthIndex].date}
           onChangeProps={onChangeProps}
           onAddExpense={onAddExpense}

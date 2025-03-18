@@ -73,7 +73,7 @@ export default function GroupsView({
         <View style={containers.rowTogether}>
           <Text style={{
             ...fonts.bigHeader,
-            color: "green"
+            color: "#008000"
           }}>
             pr:
           </Text>
@@ -84,7 +84,7 @@ export default function GroupsView({
         <View style={containers.rowTogether}>
           <Text style={{
             ...fonts.bigHeader,
-            color: "red"
+            color: "#FF0000"
           }}>
             ex:
           </Text>

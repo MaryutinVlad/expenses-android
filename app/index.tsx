@@ -111,7 +111,7 @@ export default function HomeScreen() {
       createdOn: date.toLocaleDateString("en-US"),
       altName: "",
       altColor: "",
-      earnings: earnings,
+      earnings,
     };
 
     const updatedUser: User = {

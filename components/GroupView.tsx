@@ -97,7 +97,7 @@ export default function GroupView({
           </Text>
           <Text style={{
             ...fonts.bigHeader,
-            color: earnings ? "green" : "black"
+            color: earnings ? "#008000" : "#000000"
           }}>
             {groupValue >= 1000000 ? shortenValue(groupValue) : groupValue}
           </Text>          

@@ -1,4 +1,4 @@
-export default function shortenValue(value) {
+export default function shortenValue(value: number) {
 
   let shortenedValue;
 

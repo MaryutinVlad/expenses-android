@@ -38,5 +38,5 @@ export function formateShortDate(date: string) {
   
   const dateComponents = date.split("/").map(comp => Number(comp));
 
-  return `${months[dateComponents[0] - 1]} ${dateComponents[1]}`
+  return `${months[dateComponents[0] - 1]} ${dateComponents[1]}`;
 }

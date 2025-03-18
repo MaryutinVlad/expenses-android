@@ -1,4 +1,3 @@
-import Checkbox from "expo-checkbox";
 import { StyleSheet } from "react-native";
 
 const containers = StyleSheet.create({

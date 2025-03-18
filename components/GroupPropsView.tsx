@@ -66,7 +66,7 @@ export default function GroupPropsView({
       </View>
       {
         errorMessageShown && (
-          <Text style={{ color: "red" }}>&#187; Group with this name already exists</Text>
+          <Text style={{ color: "#FF0000" }}>&#187; Group with this name already exists</Text>
         )
       }
       {
@@ -79,7 +79,7 @@ export default function GroupPropsView({
               <View style={containers.rowTogether}>
                 <Checkbox
                   style={{...assets.checkbox}}
-                  color="red"
+                  color="#FF0000"
                   value={groupType === "exp" ? true : false}
                   onValueChange={() => setGroupType("exp")}
                 />
@@ -90,7 +90,7 @@ export default function GroupPropsView({
               <View style={containers.rowTogether}>
                 <Checkbox
                   style={assets.checkbox}
-                  color="green"
+                  color="#008000"
                   value={groupType === "prof" ? true : false}
                   onValueChange={() => setGroupType("prof")}
                 />
