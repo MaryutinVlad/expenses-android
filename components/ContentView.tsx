@@ -10,21 +10,23 @@ import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
 import assets from "@/styles/assets";
 
-import { Group, ExpensesEntry } from "@/types/types";
+import { Group, Expenses, ExpensesMonth } from "@/types/types";
 
 type Props = {
   onAddGroup(groupName: string, pickedColor: string, earnings: boolean): void,
   onAddExpense(groupName: string, groupValue: number): void,
-  onImportData(expenses: ExpensesEntry[], groups: Group[], relevantOn: string): void,
+  onImportData(owner: string, expenses: ExpensesMonth[], groups: Group[], relevantOn: string): void,
   onChangeProps(altName: string, altColor: string, ogName: string): void,
   onSwitchMonth(next: boolean): void,
+  userId: string,
   selectedMonthIndex: number,
   groups: Group[],
-  expenses: ExpensesEntry[],
+  expenses: Expenses,
   dateKey: string,
 };
 
 export default function ContentView({
+  userId,
   onAddGroup,
   groups,
   expenses,
@@ -38,14 +40,14 @@ export default function ContentView({
 
   const [ isAddingGroup, setIsAddingGroup ] = useState(false);
   const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
-  const [ filter, setFilter ] = useState(2);
+  const [ filter, setFilter ] = useState("month");
   const [ fileWorkingState, setFileWorkingState ] = useState(["waiting..."]);
   const [ filesToImport, setFilesToImport ] = useState([""]);
   const [ pickedFileIndex, setPickedFileIndex ] = useState(-1);
 
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
-  const isLastMonth = expenses[selectedMonthIndex].date === dateKey;
+  const isLastMonth = expenses.own[selectedMonthIndex].date === dateKey;
 
   const toggleGroupPopup = () => {
     setFileWorkingState(["waiting..."]);
@@ -76,9 +78,10 @@ export default function ContentView({
     let uri = "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FTelegram";
     const fileKey = `${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}`;
     const fileContent = {
-      expenses,
+      owner: userId,
+      expenses: expenses.own,
       groups,
-      relevantOn: date.toLocaleDateString("en-US")
+      relevantOn: date.toLocaleDateString("en-US"),
     };
     let fileUri = "";
 
@@ -151,15 +154,15 @@ export default function ContentView({
 
     await StorageAccessFramework.readAsStringAsync(file)
       .then(content => {
-        if (content === null || !content) {
+        if (!content) {
           setFileWorkingState(cur => [...cur, "the file is irrelevant"]);
           setPickedFileIndex(-1);
           return;
         } else {
-          const { expenses, groups, relevantOn } = JSON.parse(content);
+          const { owner, expenses, groups, relevantOn } = JSON.parse(content);
           setPickedFileIndex(index);
           setFileWorkingState(cur => [...cur, "file imported for merging"]);
-          onImportData(expenses, groups, relevantOn);
+          onImportData(owner, expenses, groups, relevantOn);
         }
       })
       .catch(() => setFileWorkingState(cur => [...cur, "error while reading file"]));
@@ -168,7 +171,7 @@ export default function ContentView({
   const deleteFile = async (index: number) => {
     await StorageAccessFramework.deleteAsync(filesToImport[index])
       .then(() => {
-        setFileWorkingState(cur => ["file deleted"]);
+        setFileWorkingState(() => ["file deleted"]);
         setFilesToImport([...filesToImport.slice(0, index), ...filesToImport.slice(index + 1)]);
       })
       .catch(() => setFileWorkingState(cur => [...cur, "error while deleting file"]))
@@ -195,7 +198,7 @@ export default function ContentView({
         <SwitchView
           onSwitchMonth={() => switchMonth(true)}
           reversed={false}
-          disabled={selectedMonthIndex === expenses.length - 1 ? true : false}
+          disabled={selectedMonthIndex === expenses.own.length - 1 ? true : false}
         />
       </View>
       <View style={containers.stdList}>
@@ -298,29 +301,30 @@ export default function ContentView({
           <View style={containers.rowTogether}>
             <Button
               title="day"
-              disabled={filter === 0 ? true : false || !isLastMonth}
-              onPress={() => setFilter(0)}
+              disabled={filter === "day" ? true : false || !isLastMonth}
+              onPress={() => setFilter("day")}
             />
             <Button
               title="week"
-              disabled={(filter === 1 ? true : false) || !isLastMonth}
-              onPress={() => setFilter(1)}
+              disabled={(filter === "week" ? true : false) || !isLastMonth}
+              onPress={() => setFilter("week")}
             />
             <Button
               title="month"
-              disabled={filter === 2 ? true : false || !isLastMonth}
-              onPress={() => setFilter(2)}
+              disabled={filter === "month" ? true : false || !isLastMonth}
+              onPress={() => setFilter("month")}
             />
           </View>
         </View>
         <GroupsView
+          userId={userId}
           groups={groups}
           expenses={expenses}
-          filter={isLastMonth ? filter : 2}
-          dateKey={expenses[selectedMonthIndex].date}
+          filter={isLastMonth ? filter : "month"}
+          dateKey={expenses.own[selectedMonthIndex].date}
           onChangeProps={onChangeProps}
           onAddExpense={onAddExpense}
-          editable={dateKey === expenses[selectedMonthIndex].date ? true : false}
+          editable={dateKey === expenses.own[selectedMonthIndex].date ? true : false}
         />
       </View>
     </View>

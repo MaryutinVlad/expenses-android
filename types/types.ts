@@ -13,12 +13,17 @@ export type Expense = {
   createdOn: string,
   expenseGroup: string,
   expenseValue: number,
-  toOmit?: boolean
+  toOmit?: boolean,
+  highlighted?: boolean,
 };
 
-export type ExpensesEntry = {
+export type ExpensesMonth = {
   date: string,
   entries: Expense[],
+};
+
+export type Expenses = {
+  [key: string]: ExpensesMonth[],
 };
 
 export type ArchivedItem = {
@@ -34,13 +39,13 @@ export type ArchiveEntry = {
 
 export type User = {
   profile: {
+    id: string,
     name: string,
     createdOn: string,
     avatar: string,
     groups: Group[],
     lastUpdated: string,
-    trimmed?: boolean,
   },
-  expenses: ExpensesEntry[],
+  expenses: Expenses,
   archive: ArchiveEntry[],
 };

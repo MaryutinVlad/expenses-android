@@ -1,68 +1,74 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-get-random-values';
 
 import { useState, useEffect } from 'react';
+import * as Crypto from "expo-crypto";
 
-import type { User, ExpensesEntry, Group} from "@/types/types";
+import type { User, ExpensesMonth, Group } from "@/types/types";
 
-import { nanoid } from 'nanoid';
-
-import ParallaxScrollView from '@/components/Overlay';
+import Overlay from '@/components/Overlay';
 import ContentView from '@/components/ContentView';
 
-import { mergeExpenses } from '@/helpers/mergeExpenses';
 
 export default function HomeScreen() {
-  
+
   const date = new Date();
   const dateKey = String(date.getMonth() + 1) + "/" + String(date.getFullYear());
+  const id = Crypto.randomUUID();
   const newProfile: User = {
     profile: {
+      id: id,
       name: "New User",
       createdOn: date.toLocaleDateString("en-US"),
       avatar: '',
       groups: [],
       lastUpdated: "2/11/2024",
     },
-    expenses: [
-      {
-        date: dateKey,
-        entries: [],
-      }
-    ],
+    expenses: {
+      own: [
+        {
+          date: dateKey,
+          entries: []
+        }
+      ]
+    },
     archive: [],
   };
 
-  const [ user, setUser ] = useState(newProfile);
-  const [ monthIndex, setMonthIndex ] = useState(0);
+  const [user, setUser] = useState(newProfile);
+  const [monthIndex, setMonthIndex] = useState(0);
 
   const findProfile = async () => {
-    try {
-      const profile = await AsyncStorage.getItem('expenses-app');
 
-      if (profile !== null) {
+    try {
+
+      const profile = await AsyncStorage.getItem("expenses-app");
+
+      if (profile) {
 
         const user: User = JSON.parse(profile);
-        
-        if (user.profile.trimmed) {
-          delete user.profile.trimmed;
+
+        if (!user.profile.id) {
+          user.profile.id = Crypto.randomUUID();
+          await AsyncStorage.setItem("expenses-app", JSON.stringify(newProfile));
         }
 
-        if (user.expenses[user.expenses.length - 1].date !== dateKey) {
-          user.expenses.push({
+        const userId = user.profile.id;
+
+        if (user.expenses.own[user.expenses.own.length - 1].date !== dateKey) {
+          user.expenses.own.push({
             date: dateKey,
             entries: [],
           });
         }
 
-        setMonthIndex(user.expenses.length - 1);
+        setMonthIndex(user.expenses.own.length - 1);
         setUser(user);
       } else {
-        await AsyncStorage.setItem('expenses-app', JSON.stringify(newProfile))
+        await AsyncStorage.setItem("expenses-app", JSON.stringify(newProfile));
       }
-    } catch(error) {
-      console.log(error)
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -105,7 +111,7 @@ export default function HomeScreen() {
   const addGroup = async (groupName: string, pickedColor: string, earnings: boolean) => {
 
     const groupValues = {
-      id: nanoid(),
+      id: Crypto.randomUUID(),
       groupName,
       groupColor: pickedColor,
       createdOn: date.toLocaleDateString("en-US"),
@@ -133,9 +139,9 @@ export default function HomeScreen() {
   const removeGroup = async (id: string, name: string) => {
 
     const updatedGroups = user.profile.groups.filter(group => id !== group.id);
-    const updatedExpenses: ExpensesEntry[] = [];
+    const updatedExpenses: ExpensesMonth[] = [];
 
-    user.expenses.forEach(month => {
+    user.expenses.own.forEach(month => {
       updatedExpenses.push({
         date: month.date,
         entries: month.entries.filter(entry => entry.expenseGroup !== name)
@@ -147,7 +153,10 @@ export default function HomeScreen() {
         ...user.profile,
         groups: updatedGroups,
       },
-      expenses: updatedExpenses,
+      expenses: {
+        ...user.expenses,
+        own: updatedExpenses,
+      },
       archive: user.archive,
     };
 
@@ -156,17 +165,22 @@ export default function HomeScreen() {
   };
 
   const removeGroups = async () => {
+
+
     const updatedUser: User = {
       profile: {
         ...user.profile,
         groups: [],
       },
-      expenses: [
-        {
-          date: dateKey,
-          entries: [],
-        }
-      ],
+      expenses: {
+        ...user.expenses,
+        own: [
+          {
+            date: dateKey,
+            entries: [],
+          }
+        ],
+      },
       archive: [],
     };
 
@@ -181,28 +195,31 @@ export default function HomeScreen() {
 
     const updatedUser: User = {
       profile: user.profile,
-      expenses: [],
+      expenses: {
+        ...user.expenses,
+        own: []
+      },
       archive: user.archive,
     }
-    
+
     const expenseValues = {
-      id: nanoid(),
+      id: Crypto.randomUUID(),
       expenseGroup: groupName,
       expenseValue: groupValue,
       createdOn: date.toLocaleDateString("en-US"),
     };
 
-    if (user.expenses[user.expenses.length - 1].date === dateKey) {
+    const userOwnExpenses = user.expenses.own;
 
-      const updatedExpenses = user.expenses
+    if (userOwnExpenses[userOwnExpenses.length - 1].date === dateKey) {
 
-      updatedExpenses[updatedExpenses.length - 1].entries.push(expenseValues)
+      userOwnExpenses[userOwnExpenses.length - 1].entries.push(expenseValues)
 
-      updatedUser.expenses = updatedExpenses
+      updatedUser.expenses.own = userOwnExpenses;
 
     } else {
-      updatedUser.expenses = [
-        ...user.expenses,
+      updatedUser.expenses.own = [
+        ...user.expenses.own,
         {
           date: dateKey,
           entries: [
@@ -217,21 +234,21 @@ export default function HomeScreen() {
   };
 
   const mergeGroups = (initialGroups: Group[], importedGroups: Group[]) => {
-    
+
     const mergingGroups: { [key: string]: Group } = {};
     const result: Group[] = [];
-    
+
     importedGroups.map(importedGroup => {
 
       mergingGroups[importedGroup.groupName] = importedGroup;
     });
 
-    initialGroups.map(initialGroup => mergingGroups[initialGroup.groupName] =  {
+    initialGroups.map(initialGroup => mergingGroups[initialGroup.groupName] = {
       ...initialGroup,
       altColor: Object.hasOwn(initialGroup, "altColor") ? initialGroup.altColor : "",
       altName: Object.hasOwn(initialGroup, "altName") ? initialGroup.altName : "",
     });
-    
+
     for (let group in mergingGroups) {
       result.push(mergingGroups[group]);
     }
@@ -239,32 +256,34 @@ export default function HomeScreen() {
     return result;
   };
 
-  const importData = async (importedExpenses: ExpensesEntry[], importedGroups: Group[], relevantOn: string) => {
+  const importData = async (owner: string, importedExpenses: ExpensesMonth[], importedGroups: Group[], relevantOn: string) => {
 
-    const updatedExpenses = mergeExpenses(user.expenses, importedExpenses, user.profile.lastUpdated);
     const updatedGroups = mergeGroups(user.profile.groups, importedGroups);
 
     const updatedUser: User = {
       profile: {
         ...user.profile,
         groups: updatedGroups,
-        lastUpdated: relevantOn
+        lastUpdated: relevantOn,
       },
-      expenses: updatedExpenses,
+      expenses: {
+        ...user.expenses,
+        [owner]: importedExpenses,
+      },
       archive: user.archive,
     };
 
     await AsyncStorage.setItem("expenses-app", JSON.stringify(updatedUser));
 
-    setMonthIndex(updatedExpenses.length - 1)
     setUser(updatedUser);
   };
 
   useEffect(() => {
+
     async function fetchData() {
       try {
         await findProfile();
-      } catch(err) {
+      } catch (err) {
         console.log("error in findProfile effect:" + " " + err);
       }
     }
@@ -272,15 +291,16 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <ParallaxScrollView
+    <Overlay
       headerBackgroundColor={{ light: '#FFFFFF', dark: '#FFFFFF' }}
       user={user.profile}
-      monthSelected={user.expenses[monthIndex].date}
+      monthSelected={user.expenses.own[monthIndex].date}
       onChangeName={changeName}
       onRemoveGroup={removeGroup}
       onRemoveGroups={removeGroups}
       >
       <ContentView
+        userId={user.profile.id}
         onAddGroup={addGroup}
         onAddExpense={addExpense}
         onChangeProps={changeProps}
@@ -291,6 +311,6 @@ export default function HomeScreen() {
         selectedMonthIndex={monthIndex}
         onSwitchMonth={switchMonth}
       />
-    </ParallaxScrollView>
+    </Overlay>
   );
 }

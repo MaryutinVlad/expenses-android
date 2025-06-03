@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import { useState } from "react";
 
 import GroupView from "./GroupView";
-import { Group, ExpensesEntry } from "@/types/types";
+import { Group, Expenses } from "@/types/types";
 
 import showExpenses from "../helpers/showExpenses";
 import shortenValue from "@/helpers/shortenValue";
@@ -12,13 +12,14 @@ import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
 
 type Props = {
+  userId: string,
   groups: Group[],
-  expenses: ExpensesEntry[],
-  filter: number,
+  expenses: Expenses,
+  filter: string,
   dateKey: string,
   editable: boolean,
   onChangeProps(altName: string, altColor: string, ogName: string): void,
-  onAddExpense( groupName: string, groupValue: number): void,
+  onAddExpense(groupName: string, groupValue: number): void,
 };
 
 type GroupProps = {
@@ -31,29 +32,30 @@ type GroupProps = {
 };
 
 export default function GroupsView({
- groups,
- expenses,
- filter,
- dateKey,
- onChangeProps,
- onAddExpense,
- editable,
+  userId,
+  groups,
+  expenses,
+  filter,
+  dateKey,
+  onChangeProps,
+  onAddExpense,
+  editable,
 }: Props) {
 
-  const groupProps : GroupProps = {};
+  const groupProps: GroupProps = {};
 
   groups.map(group => {
     groupProps[group.groupName] = {
       color: group.groupColor,
       altName: group.altName ? group.altName : "",
-      altColor:  group.altColor ? group.altColor : "",
+      altColor: group.altColor ? group.altColor : "",
       isOpened: false
     };
   });
 
-  const [ openedGroup, setOpenedGroup ] = useState("");
-  const { expensesSummary, expensesHistory } = showExpenses(filter, expenses, groups, dateKey);
-  
+  const [openedGroup, setOpenedGroup] = useState("");
+  const { expensesSummary, sortedHistory } = showExpenses(userId, filter, expenses, groups, dateKey, "");
+
   const toggleGroup = (groupName: string) => setOpenedGroup(prev => prev === groupName ? "" : groupName);
 
   let expensesTotal = 0;
@@ -94,7 +96,7 @@ export default function GroupsView({
         </View>
       </View>
       {
-        expensesSummary.map(({ id, groupName, groupValue, earnings }) => 
+        expensesSummary.map(({ id, groupName, groupValue, earnings }) =>
         (
           <GroupView
             key={id}
@@ -105,9 +107,9 @@ export default function GroupsView({
             expensesTotal={expensesTotal}
             onChangeProps={onChangeProps}
             onAddExpense={onAddExpense}
+            onToggleGroup={toggleGroup}
             earnings={earnings}
             editable={editable}
-            onToggleGroup={toggleGroup}
             isOpened={groupName === openedGroup ? true : false}
           />
         ))
@@ -117,9 +119,9 @@ export default function GroupsView({
         ...containers.vertIndent,
       }}>
         {
-          expensesHistory.map(({ id, expenseGroup, expenseValue, createdOn }, index) => {
-            
-            if (!index || expensesHistory[index].createdOn !== expensesHistory[index - 1].createdOn) {
+          sortedHistory.map(({ id, expenseGroup, expenseValue, createdOn }, index) => {
+
+            if (!index || sortedHistory[index].createdOn !== sortedHistory[index - 1].createdOn) {
 
               const formatedDate = formateDate(createdOn);
 
@@ -136,7 +138,7 @@ export default function GroupsView({
                       ...fonts.stdHeader,
                       alignSelf: "center",
                       borderBottomWidth: .5,
-                  }}>
+                    }}>
                     {formatedDate}
                   </Text>
                   <View style={containers.rowTogether}>
@@ -145,7 +147,7 @@ export default function GroupsView({
                     </Text>
                     <Text style={{
                       color: `${groupProps[expenseGroup].altColor ? groupProps[expenseGroup].altColor : groupProps[expenseGroup].color}`,
-                        ...fonts.stdHeader
+                      ...fonts.stdHeader
                     }}>
                       {expenseGroup}
                     </Text>
@@ -153,7 +155,7 @@ export default function GroupsView({
                 </View>
               )
             } else {
-              return(
+              return (
                 <View
                   key={id}
                   style={containers.rowTogether}
@@ -163,12 +165,13 @@ export default function GroupsView({
                   </Text>
                   <Text style={{
                     color: `${groupProps[expenseGroup].altColor ? groupProps[expenseGroup].altColor : groupProps[expenseGroup].color}`,
-                      ...fonts.stdHeader
+                    ...fonts.stdHeader
                   }}>
                     {expenseGroup}
                   </Text>
                 </View>
-            )}
+              )
+            }
           })
         }
       </View>

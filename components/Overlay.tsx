@@ -1,4 +1,4 @@
-import type { PropsWithChildren, ReactElement } from 'react';
+import type { PropsWithChildren } from 'react';
 import type { Group } from '@/types/types';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -22,7 +22,7 @@ type Props = PropsWithChildren<{
   onRemoveGroups(): void,
 }>;
 
-export default function ParallaxScrollView({
+export default function Overlay({
   children,
   headerBackgroundColor,
   user,
