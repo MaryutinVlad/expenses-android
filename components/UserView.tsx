@@ -20,6 +20,7 @@ export type UserProps = {
   onChangeName(nameInput: string): void,
   onRemoveGroup(id: string, name: string): void,
   onRemoveGroups(): void,
+  onRemoveProfile(): void,
 }
 
 export default function User({
@@ -29,17 +30,20 @@ export default function User({
   monthSelected,
   onChangeName,
   onRemoveGroup,
-  onRemoveGroups
+  onRemoveGroups,
+  onRemoveProfile,
 } : UserProps) {
 
   const [ areSettingsShown, setAreSettingsShown ] = useState(false);
   const [ groupTargeted, setGroupTargeted ] = useState({ id: "", name: ""});
-  const [ isConfirmationShown, setIsConfirmationShown ] = useState(false);
+  const [ groupConfirmationShown, setGroupConfirmation ] = useState(false);
+  const [ profileConfirmationShown, setProfileConfirmation ] = useState(false);
   const formatedDate = formateShortDate(monthSelected);
 
   const toggleSettings = () => {
     if (!areSettingsShown) {
-      setIsConfirmationShown(false);
+      setGroupConfirmation(false);
+      setProfileConfirmation(false);
       setGroupTargeted({ id: "", name: ""});
     }
     setAreSettingsShown(!areSettingsShown);
@@ -54,13 +58,24 @@ export default function User({
     setGroupTargeted({ id: "", name: ""});
   };
 
-  const toggleConfirmation = () => {
-    setIsConfirmationShown(!isConfirmationShown);
+  const toggleGroupConfirmation = () => {
+    setGroupConfirmation(!groupConfirmationShown);
+  };
+
+  const toggleProfileConfirmation = () => {
+    setProfileConfirmation(!profileConfirmationShown);
   };
 
   const removeGroups = () => {
-    setIsConfirmationShown(!isConfirmationShown);
+    setGroupConfirmation(!groupConfirmationShown);
+    setProfileConfirmation(false);
     onRemoveGroups();
+  };
+
+  const removeProfile = () => {
+    setProfileConfirmation(!profileConfirmationShown);
+    setGroupConfirmation(false);
+    onRemoveProfile();
   };
 
   return (
@@ -117,9 +132,9 @@ export default function User({
               </View>
             </View>
             <View style={containers.rowApart}>
-              <Text style={fonts.titleOnButton}>{ isConfirmationShown ? "Are you sure ?" : "Delete all groups"}</Text>
+              <Text style={fonts.titleOnButton}>{ groupConfirmationShown ? "Are you sure ?" : "Delete all groups"}</Text>
               {
-                isConfirmationShown ? (
+                groupConfirmationShown ? (
                   <>
                     <Button
                       title="yes"
@@ -127,13 +142,35 @@ export default function User({
                     />
                     <Button
                       title="no"
-                      onPress={toggleConfirmation}
+                      onPress={toggleGroupConfirmation}
                     />
                   </>
                 ) : (
                   <Button
                     title="delete"
-                    onPress={toggleConfirmation}
+                    onPress={toggleGroupConfirmation}
+                  />
+                )
+              }
+            </View>
+            <View style={containers.rowApart}>
+              <Text style={fonts.titleOnButton}>{ profileConfirmationShown ? "Are you sure ?" : "Delete profile"}</Text>
+              {
+                profileConfirmationShown ? (
+                  <>
+                    <Button
+                      title="yes"
+                      onPress={removeProfile}
+                    />
+                    <Button
+                      title="no"
+                      onPress={toggleProfileConfirmation}
+                    />
+                  </>
+                ) : (
+                  <Button
+                    title="delete"
+                    onPress={toggleProfileConfirmation}
                   />
                 )
               }

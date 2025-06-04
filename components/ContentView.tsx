@@ -1,5 +1,5 @@
 import { View, Text, Button, Image, Pressable } from "react-native";
-import { useState } from "react";
+import { use, useState } from "react";
 import * as FileSystem from "expo-file-system";
 
 import GroupsView from "./GroupsView";
@@ -15,10 +15,11 @@ import { Group, Expenses, ExpensesMonth } from "@/types/types";
 type Props = {
   onAddGroup(groupName: string, pickedColor: string, earnings: boolean): void,
   onAddExpense(groupName: string, groupValue: number): void,
-  onImportData(owner: string, expenses: ExpensesMonth[], groups: Group[], relevantOn: string): void,
+  onImportData(owner: string, expenses: ExpensesMonth[], groups: Group[]): void,
   onChangeProps(altName: string, altColor: string, ogName: string): void,
   onSwitchMonth(next: boolean): void,
   userId: string,
+  userName: string,
   selectedMonthIndex: number,
   groups: Group[],
   expenses: Expenses,
@@ -27,6 +28,7 @@ type Props = {
 
 export default function ContentView({
   userId,
+  userName,
   onAddGroup,
   groups,
   expenses,
@@ -38,12 +40,13 @@ export default function ContentView({
   onSwitchMonth,
 }: Props) {
 
-  const [ isAddingGroup, setIsAddingGroup ] = useState(false);
-  const [ isSaveLoadOpen, setSaveLoadOpen ] = useState(false);
-  const [ filter, setFilter ] = useState("month");
-  const [ fileWorkingState, setFileWorkingState ] = useState(["waiting..."]);
-  const [ filesToImport, setFilesToImport ] = useState([""]);
-  const [ pickedFileIndex, setPickedFileIndex ] = useState(-1);
+  const [isAddingGroup, setIsAddingGroup] = useState(false);
+  const [isSaveLoadOpen, setSaveLoadOpen] = useState(false);
+  const [filter, setFilter] = useState("month");
+  const [fileWorkingState, setFileWorkingState] = useState(["waiting..."]);
+  const [filesToImport, setFilesToImport] = useState([""]);
+  const [pickedFileIndex, setPickedFileIndex] = useState(-1);
+  const [isAdvOptionsShown, toggleAdvOptions] = useState(false);
 
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
@@ -79,9 +82,9 @@ export default function ContentView({
     const fileKey = `${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}`;
     const fileContent = {
       owner: userId,
+      name: userName,
       expenses: expenses.own,
-      groups,
-      relevantOn: date.toLocaleDateString("en-US"),
+      groups
     };
     let fileUri = "";
 
@@ -149,7 +152,7 @@ export default function ContentView({
   };
 
   const importFile = async (file: string, index: number) => {
-  
+
     setFileWorkingState(() => ["file picked"]);
 
     await StorageAccessFramework.readAsStringAsync(file)
@@ -159,10 +162,10 @@ export default function ContentView({
           setPickedFileIndex(-1);
           return;
         } else {
-          const { owner, expenses, groups, relevantOn } = JSON.parse(content);
+          const { owner, expenses, groups } = JSON.parse(content);
           setPickedFileIndex(index);
           setFileWorkingState(cur => [...cur, "file imported for merging"]);
-          onImportData(owner, expenses, groups, relevantOn);
+          onImportData(owner, expenses, groups);
         }
       })
       .catch(() => setFileWorkingState(cur => [...cur, "error while reading file"]));
@@ -260,7 +263,7 @@ export default function ContentView({
                         <Text style={{
                           ...fonts.smallHeader,
                           color: pickedFileIndex === index ? "#008000" : "#000000",
-                          }}
+                        }}
                         >
                           {toRender}
                         </Text>
@@ -314,8 +317,31 @@ export default function ContentView({
               disabled={filter === "month" ? true : false || !isLastMonth}
               onPress={() => setFilter("month")}
             />
+            <Button
+              title="adv"
+              color={isAdvOptionsShown ? "#DB7093" : "#1E90FF"}
+              onPress={() => toggleAdvOptions(!isAdvOptionsShown)}
+            />
           </View>
         </View>
+        {
+          isAdvOptionsShown && (
+            <View style={containers.popup}>
+              <View style={containers.rowApart}>
+                <Text style={fonts.titleOnButton}>Highlight:</Text>
+                <View style={containers.halfSizedList}>
+                  
+                </View>
+              </View>
+              <View style={containers.rowApart}>
+                <Text style={fonts.titleOnButton}>Select:</Text>
+                <View style={containers.halfSizedList}>
+
+                </View>
+              </View>
+            </View>
+          )
+        }
         <GroupsView
           userId={userId}
           groups={groups}

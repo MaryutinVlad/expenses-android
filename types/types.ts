@@ -13,7 +13,6 @@ export type Expense = {
   createdOn: string,
   expenseGroup: string,
   expenseValue: number,
-  toOmit?: boolean,
   highlighted?: boolean,
 };
 
@@ -23,6 +22,7 @@ export type ExpensesMonth = {
 };
 
 export type Expenses = {
+  own: ExpensesMonth[],
   [key: string]: ExpensesMonth[],
 };
 
@@ -44,7 +44,7 @@ export type User = {
     createdOn: string,
     avatar: string,
     groups: Group[],
-    lastUpdated: string,
+    ver: string,
   },
   expenses: Expenses,
   archive: ArchiveEntry[],

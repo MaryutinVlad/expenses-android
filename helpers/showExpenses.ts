@@ -67,8 +67,6 @@ export default function showExpenses(id: string, filter: string, expenses: Expen
             const currentExpense = expenses[userId][monthIndex].entries[expenseIndex];
             const [curMonth, curDay, curYear] = currentExpense.createdOn.split("/").map(value => Number(value));
             const [finMonth, finDay, finYear] = finalKey.split("/").map(value => Number(value));
-            console.log(curMonth, curDay, curYear)
-            console.log(finMonth, finDay, finYear)
 
             if (curYear < finYear) {
               break;

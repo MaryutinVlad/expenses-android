@@ -22,7 +22,7 @@ export default function HomeScreen() {
       createdOn: date.toLocaleDateString("en-US"),
       avatar: '',
       groups: [],
-      lastUpdated: "2/11/2024",
+      ver: "1.1.0",
     },
     expenses: {
       own: [
@@ -38,6 +38,14 @@ export default function HomeScreen() {
   const [user, setUser] = useState(newProfile);
   const [monthIndex, setMonthIndex] = useState(0);
 
+  async function fetchData() {
+    try {
+      await findProfile();
+    } catch (err) {
+      console.log("error in findProfile effect:" + " " + err);
+    }
+  }
+
   const findProfile = async () => {
 
     try {
@@ -48,12 +56,9 @@ export default function HomeScreen() {
 
         const user: User = JSON.parse(profile);
 
-        if (!user.profile.id) {
-          user.profile.id = Crypto.randomUUID();
-          await AsyncStorage.setItem("expenses-app", JSON.stringify(newProfile));
+        if (!user.profile.ver) {
+          return removeProfile()
         }
-
-        const userId = user.profile.id;
 
         if (user.expenses.own[user.expenses.own.length - 1].date !== dateKey) {
           user.expenses.own.push({
@@ -66,6 +71,7 @@ export default function HomeScreen() {
         setUser(user);
       } else {
         await AsyncStorage.setItem("expenses-app", JSON.stringify(newProfile));
+        await findProfile();
       }
     } catch (error) {
       console.log(error);
@@ -87,6 +93,7 @@ export default function HomeScreen() {
   };
 
   const changeProps = async (altName: string, altColor: string, ogName: string) => {
+
     const updatedGroups = user.profile.groups.map(group => {
       if (group.groupName === ogName) {
         group.altName = altName;
@@ -189,6 +196,11 @@ export default function HomeScreen() {
     setUser(updatedUser);
   };
 
+  const removeProfile = async () => {
+    await AsyncStorage.removeItem("expenses-app");
+    await findProfile();
+  }
+
   const switchMonth = (next: boolean) => setMonthIndex(prev => next ? prev += 1 : prev -= 1);
 
   const addExpense = async (groupName: string, groupValue: number) => {
@@ -256,7 +268,11 @@ export default function HomeScreen() {
     return result;
   };
 
-  const importData = async (owner: string, importedExpenses: ExpensesMonth[], importedGroups: Group[], relevantOn: string) => {
+  const importData = async (owner: string, importedExpenses: ExpensesMonth[], importedGroups: Group[]) => {
+
+    if (owner === user.profile.id) {
+      return;
+    }
 
     const updatedGroups = mergeGroups(user.profile.groups, importedGroups);
 
@@ -264,7 +280,6 @@ export default function HomeScreen() {
       profile: {
         ...user.profile,
         groups: updatedGroups,
-        lastUpdated: relevantOn,
       },
       expenses: {
         ...user.expenses,
@@ -279,14 +294,6 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-
-    async function fetchData() {
-      try {
-        await findProfile();
-      } catch (err) {
-        console.log("error in findProfile effect:" + " " + err);
-      }
-    }
     fetchData();
   }, []);
 
@@ -298,9 +305,11 @@ export default function HomeScreen() {
       onChangeName={changeName}
       onRemoveGroup={removeGroup}
       onRemoveGroups={removeGroups}
-      >
+      onRemoveProfile={removeProfile}
+    >
       <ContentView
         userId={user.profile.id}
+        userName={user.profile.name}
         onAddGroup={addGroup}
         onAddExpense={addExpense}
         onChangeProps={changeProps}

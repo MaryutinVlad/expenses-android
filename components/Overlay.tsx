@@ -20,6 +20,7 @@ type Props = PropsWithChildren<{
   onChangeName(nameInput: string): void,
   onRemoveGroup(id: string, name: string): void,
   onRemoveGroups(): void,
+  onRemoveProfile(): void,
 }>;
 
 export default function Overlay({
@@ -30,6 +31,7 @@ export default function Overlay({
   onChangeName,
   onRemoveGroup,
   onRemoveGroups,
+  onRemoveProfile
 }: Props) {
 
   const colorScheme = useColorScheme() ?? 'light';
@@ -49,6 +51,7 @@ export default function Overlay({
               onChangeName={onChangeName}
               onRemoveGroup={onRemoveGroup}
               onRemoveGroups={onRemoveGroups}
+              onRemoveProfile={onRemoveProfile}
               monthSelected={monthSelected}
               avatar={
                 <Image
