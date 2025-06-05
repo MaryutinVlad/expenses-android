@@ -22,6 +22,7 @@ export default function HomeScreen() {
       createdOn: date.toLocaleDateString("en-US"),
       avatar: '',
       groups: [],
+      contacts: [],
       ver: "1.1.0",
     },
     expenses: {
@@ -58,6 +59,11 @@ export default function HomeScreen() {
 
         if (!user.profile.ver) {
           return removeProfile()
+        }
+
+        if (!user.profile.contacts) {
+          user.profile.contacts = [];
+          await AsyncStorage.setItem("expenses-app", JSON.stringify(user));
         }
 
         if (user.expenses.own[user.expenses.own.length - 1].date !== dateKey) {
@@ -268,13 +274,29 @@ export default function HomeScreen() {
     return result;
   };
 
-  const importData = async (owner: string, importedExpenses: ExpensesMonth[], importedGroups: Group[]) => {
+  const importData = async (owner: string, name: string, importedExpenses: ExpensesMonth[], importedGroups: Group[]) => {
 
-    if (owner === user.profile.id) {
+    const ownId = user.profile.id;
+
+    if (owner === ownId) {
       return;
     }
 
+    const userContacts = user.profile.contacts;
     const updatedGroups = mergeGroups(user.profile.groups, importedGroups);
+
+    const contactIndex = user.profile.contacts.findIndex(contact => contact.id === owner);
+
+    if (contactIndex === -1) {
+
+      user.profile.contacts.push({
+        id: owner,
+        name
+      });
+
+    } else {
+      userContacts[contactIndex].name === name;
+    }
 
     const updatedUser: User = {
       profile: {
@@ -310,6 +332,7 @@ export default function HomeScreen() {
       <ContentView
         userId={user.profile.id}
         userName={user.profile.name}
+        userContacts={user.profile.contacts}
         onAddGroup={addGroup}
         onAddExpense={addExpense}
         onChangeProps={changeProps}

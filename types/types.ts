@@ -37,6 +37,11 @@ export type ArchiveEntry = {
   totals: ArchivedItem[],
 };
 
+export type Contact = {
+  id: string,
+  name: string,
+}
+
 export type User = {
   profile: {
     id: string,
@@ -44,6 +49,7 @@ export type User = {
     createdOn: string,
     avatar: string,
     groups: Group[],
+    contacts: Contact[],
     ver: string,
   },
   expenses: Expenses,

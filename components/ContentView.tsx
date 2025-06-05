@@ -1,5 +1,5 @@
 import { View, Text, Button, Image, Pressable } from "react-native";
-import { use, useState } from "react";
+import { useState } from "react";
 import * as FileSystem from "expo-file-system";
 
 import GroupsView from "./GroupsView";
@@ -10,16 +10,19 @@ import containers from "@/styles/containers";
 import fonts from "@/styles/fonts";
 import assets from "@/styles/assets";
 
+import type { Contact } from "@/types/types";
+
 import { Group, Expenses, ExpensesMonth } from "@/types/types";
 
 type Props = {
   onAddGroup(groupName: string, pickedColor: string, earnings: boolean): void,
   onAddExpense(groupName: string, groupValue: number): void,
-  onImportData(owner: string, expenses: ExpensesMonth[], groups: Group[]): void,
+  onImportData(owner: string, name: string, expenses: ExpensesMonth[], groups: Group[]): void,
   onChangeProps(altName: string, altColor: string, ogName: string): void,
   onSwitchMonth(next: boolean): void,
   userId: string,
   userName: string,
+  userContacts: Contact[],
   selectedMonthIndex: number,
   groups: Group[],
   expenses: Expenses,
@@ -29,6 +32,7 @@ type Props = {
 export default function ContentView({
   userId,
   userName,
+  userContacts,
   onAddGroup,
   groups,
   expenses,
@@ -47,6 +51,10 @@ export default function ContentView({
   const [filesToImport, setFilesToImport] = useState([""]);
   const [pickedFileIndex, setPickedFileIndex] = useState(-1);
   const [isAdvOptionsShown, toggleAdvOptions] = useState(false);
+  const [advfilter, setAdvFilter] = useState({
+    user: "",
+    option: "",
+  })
 
   const { StorageAccessFramework } = FileSystem;
   const date = new Date();
@@ -162,10 +170,10 @@ export default function ContentView({
           setPickedFileIndex(-1);
           return;
         } else {
-          const { owner, expenses, groups } = JSON.parse(content);
+          const { owner, name, expenses, groups } = JSON.parse(content);
           setPickedFileIndex(index);
           setFileWorkingState(cur => [...cur, "file imported for merging"]);
-          onImportData(owner, expenses, groups);
+          onImportData(owner, name, expenses, groups);
         }
       })
       .catch(() => setFileWorkingState(cur => [...cur, "error while reading file"]));
@@ -327,16 +335,56 @@ export default function ContentView({
         {
           isAdvOptionsShown && (
             <View style={containers.popup}>
+              <Text style={fonts.stdHeader}>Advanced filtering</Text>
               <View style={containers.rowApart}>
-                <Text style={fonts.titleOnButton}>Highlight:</Text>
                 <View style={containers.halfSizedList}>
-                  
+                  <Button
+                    title="highlight"
+                    color={advfilter.option === "highlight" ? "#FF69B4" : "#e7accf"}
+                    onPress={() => setAdvFilter(cur => {
+                      return {
+                        user: cur.user,
+                        option: cur.option === "highlight" ? cur.option = "" : cur.option = "highlight"
+                      }
+                    })}
+                  />
+                  <Button
+                    title="select"
+                    color={advfilter.option === "select" ? "#FF69B4" : "#e7accf"}
+                    onPress={() => setAdvFilter(cur => {
+                      return {
+                        user: cur.user,
+                        option: cur.option === "select" ? cur.option = "" : cur.option = "select"
+                      }
+                    })}
+                  />
                 </View>
-              </View>
-              <View style={containers.rowApart}>
-                <Text style={fonts.titleOnButton}>Select:</Text>
                 <View style={containers.halfSizedList}>
-
+                  <Button
+                    title={userName + "(me)"}
+                    color={advfilter.user === userId ? "#4682B4" : "#00BFFF"}
+                    onPress={() => setAdvFilter(cur => {
+                      return {
+                        user: cur.user === userId ? cur.user = "" : cur.user = userId,
+                        option: cur.option,
+                      }
+                    })}
+                  />
+                  {
+                    userContacts.map(contact => (
+                      <Button
+                        key={contact.id}
+                        title={contact.name}
+                        color={advfilter.user === contact.id ? "#4682B4" : "#00BFFF"}
+                        onPress={() => setAdvFilter(cur => {
+                          return {
+                            user: cur.user === contact.id ? cur.user = "" : cur.user = contact.id,
+                            option: cur.option,
+                          }
+                        })}
+                      />
+                    ))
+                  }
                 </View>
               </View>
             </View>
